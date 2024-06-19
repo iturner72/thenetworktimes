@@ -1,0 +1,3 @@
+helpful logging command run command
+
+cargo leptos watch > output.log 2>&1
