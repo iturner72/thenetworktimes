@@ -37,7 +37,7 @@ async fn main() {
 
     let app_state = AppState {
         leptos_options: leptos_options.clone(),
-        pool,
+        pool: pool.clone(),
     };
 
     async fn server_fn_handler(

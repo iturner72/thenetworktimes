@@ -82,7 +82,7 @@ cfg_if! {
 					match item {
 						Ok(bytes) => {
 							let event = String::from_utf8(bytes.to_vec()).map_err(|e| anyhow!("Failed to convert bytes to string: {}", e))?;
-                            info!("Trimmed event: {}", event.trim());
+//                            info!("Trimmed event: {}", event.trim());
 
                             for line in event.trim().lines() {
                                 if line.trim() == "data: [DONE]" {
@@ -94,7 +94,7 @@ cfg_if! {
                                     let re = Regex::new(r#""content":"([^"]*)""#).unwrap();
                                     for cap in re.captures_iter(json_str) {
                                         let content = cap[1].to_string();
-                                        info!("Extracted content: {}", content);
+//                                        info!("Extracted content: {}", content);
                                         tx.send(Ok(Event::default().data(content))).await.ok();
                                     }
                                 }

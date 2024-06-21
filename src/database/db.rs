@@ -3,16 +3,18 @@ use cfg_if::cfg_if;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use diesel::prelude::*;
-        use diesel::r2d2::{self, ConnectionManager};
+        use diesel::PgConnection;
+        use deadpool_diesel::{Manager, Pool, Runtime};
         use crate::models::conversations::{NewMessage, Thread, Message};
         use crate::schema::{threads, messages};
 
-        pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
-        
+        pub type DbPool = Pool<Manager<PgConnection>>;
+
         pub fn establish_connection(database_url: &str) -> DbPool {
-            let manager = ConnectionManager::<PgConnection>::new(database_url);
-            r2d2::Pool::builder()
-                .build(manager)
+            let manager = Manager::new(database_url, Runtime::Tokio1);
+            Pool::builder(manager)
+                .max_size(8)
+                .build()
                 .expect("Failed to create pool.")
         }
         
@@ -32,6 +34,6 @@ cfg_if! {
             messages::table
                 .filter(messages::thread_id.eq(thread_id))
                 .load::<Message>(conn)
+        }
     }
-}}
-
+}

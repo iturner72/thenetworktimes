@@ -6,11 +6,11 @@ cfg_if! {
         use leptos::LeptosOptions;
         use crate::database::db::DbPool;
 
-        #[derive(FromRef, Debug, Clone)]
+        #[derive(FromRef, Clone)]
         pub struct AppState {
             pub leptos_options: LeptosOptions,
             pub pool: DbPool,
         }
+    }
+}
 
-
-}}
