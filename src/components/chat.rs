@@ -1,6 +1,7 @@
 use cfg_if::cfg_if;
 use leptos::*;
 use log::error;
+use urlencoding;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::{EventSource, MessageEvent, ErrorEvent};
@@ -115,8 +116,9 @@ cfg_if! {
 
 		pub async fn send_message_stream(message: String, tx: mpsc::Sender<Result<Event, anyhow::Error>>) {
 			log::info!("send_message_stream function called with message: {}", message);
+            let decoded_message = urlencoding::decode(&message).expect("Failed to decode message");
 			let openai_service = OpenAIService::new("gpt-3.5-turbo".to_string());
-			if let Err(e) = openai_service.send_message(message, tx).await {
+			if let Err(e) = openai_service.send_message(decoded_message.into_owned(), tx).await {
 				error!("Error in send_message_stream: {}", e);
 			}
 		}
@@ -143,7 +145,7 @@ pub fn Chat() -> impl IntoView {
 			set_is_sending(true);
 			set_response.set("".to_string());
 
-			let event_source = Rc::new(EventSource::new(&format!("/api/send_message_stream?message={}", message_value)).expect("Failed to connect to SSE endpoint"));
+            let event_source = Rc::new(EventSource::new(&format!("/api/send_message_stream?message={}", urlencoding::encode(&message_value))).expect("Failed to connect to SSE endpoint"));
 
 			let on_message = {
 				let event_source = Rc::clone(&event_source);
