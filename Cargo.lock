@@ -1608,48 +1608,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nwtr"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "bytes",
- "cfg-if",
- "chrono",
- "console_error_panic_hook",
- "console_log",
- "deadpool-diesel",
- "diesel",
- "dotenv",
- "env_logger",
- "eventsource-stream",
- "futures",
- "futures-util",
- "gloo-net 0.2.6",
- "http 1.1.0",
- "http-body 1.0.0",
- "leptos",
- "leptos_axum",
- "leptos_meta",
- "leptos_router",
- "log",
- "pin-project",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "urlencoding",
- "uuid",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
 name = "object"
 version = "0.32.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2407,6 +2365,48 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "thenetworktimes"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "bytes",
+ "cfg-if",
+ "chrono",
+ "console_error_panic_hook",
+ "console_log",
+ "deadpool-diesel",
+ "diesel",
+ "dotenv",
+ "env_logger",
+ "eventsource-stream",
+ "futures",
+ "futures-util",
+ "gloo-net 0.2.6",
+ "http 1.1.0",
+ "http-body 1.0.0",
+ "leptos",
+ "leptos_axum",
+ "leptos_meta",
+ "leptos_router",
+ "log",
+ "pin-project",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "urlencoding",
+ "uuid",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
