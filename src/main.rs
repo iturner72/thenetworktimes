@@ -16,13 +16,13 @@ async fn main() {
 	use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
     use tokio::sync::mpsc;
     use std::collections::HashMap;
-	use nwtr::app::*;
-	use nwtr::fileserv::file_and_error_handler;
-	use nwtr::components::chat::{SseStream, send_message_stream};
-    use nwtr::database::db::establish_connection;
-    use nwtr::handlers::create_message;
-    use nwtr::state::AppState;
-    use nwtr::services::hubble::*;
+	use thenetworktimes::app::*;
+	use thenetworktimes::fileserv::file_and_error_handler;
+	use thenetworktimes::components::chat::{SseStream, send_message_stream};
+    use thenetworktimes::database::db::establish_connection;
+    use thenetworktimes::handlers::create_message;
+    use thenetworktimes::state::AppState;
+    use thenetworktimes::services::hubble::*;
 
     dotenv().ok();
     env_logger::init_from_env(Env::default().default_filter_or("info"));

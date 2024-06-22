@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("homepage has title and heading text", async ({ page }) => {
   await page.goto("http://localhost:3000/");
 
-  await expect(page).toHaveTitle("nwtr");
+  await expect(page).toHaveTitle("thenetworktimes");
 
-  await expect(page.locator("h1")).toHaveText("nwtr");
+  await expect(page.locator("h1")).toHaveText("thenetworktimes");
 });
