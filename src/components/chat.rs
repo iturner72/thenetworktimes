@@ -10,16 +10,23 @@ use std::rc::Rc;
 cfg_if! {
 	if #[cfg(feature = "ssr")] {
 		use axum::response::sse::Event;
-		use anyhow::{anyhow, Error};
-		use reqwest::Client;
-		use serde::{Deserialize, Serialize};
-		use regex::Regex;
-		use std::env;
-		use std::pin::Pin;
-		use std::task::{Context, Poll};
 		use tokio::sync::mpsc;
 		use futures::stream::{Stream, StreamExt};
+        use diesel::prelude::*;
+        use leptos::ServerFnError;
+        use crate::schema::threads::dsl::*;
+        use crate::database::db::DbPool;
+        use crate::models::conversations::{Thread, Message, NewMessage};
+		use serde::{Deserialize, Serialize};
+		use reqwest::Client;
+		use regex::Regex;
+		use std::pin::Pin;
+		use std::task::{Context, Poll};
+		use anyhow::{anyhow, Error};
 		use log::info;
+		use std::env;
+        use chrono::Utc;
+        use uuid::Uuid;
 
 		pub struct SseStream {
 			pub receiver: mpsc::Receiver<Result<Event, anyhow::Error>>,
@@ -122,6 +129,71 @@ cfg_if! {
 				error!("Error in send_message_stream: {}", e);
 			}
 		}
+
+
+        #[server(GetThreads, "/api")]
+        pub async fn get_threads() -> Result<Vec<Thread>, ServerFnError> {
+            let pool = use_context::<DbPool>().expect("Failed to get DbPool from context");
+            let conn = pool.get().await.map_err(|e| ServerFnError::ServerError(e.to_string()))?;
+        
+            conn.interact(|conn| {
+                use crate::schema::threads::dsl::*;
+                threads.load::<Thread>(conn)
+            })
+            .await
+            .map_err(|e| ServerFnError::<std::convert::Infallible>::ServerError(e.to_string()))?
+            .map_err(|e| ServerFnError::<std::convert::Infallible>::ServerError(e.to_string()))
+        }
+
+
+        
+//        #[server(GetThreadMessages, "/api")]
+//        pub async fn get_thread_messages(thread_id: String) -> Result<Vec<Message>, ServerFnError> {
+//            use crate::schema::messages::dsl::*;
+//        
+//            let conn = pool.get().await.map_err(|e| ServerFnError::ServerError(e.to_string()));
+//            let test_get_thread_messages: Result<(), diesel::result::Error> = conn.interact(move |conn| {
+//                messages
+//                    .filter(thread_id.eq(&thread_id))
+//                    .order(created_at.asc())
+//                    .load::<Message>(conn)
+//                    .map_err(|e| ServerFnError::ServerError(e.to_string()))
+//            }).await.map_err(|e| ServerFnError::ServerError(e.to_string()))?
+//        }
+//        
+//        #[server(CreateMessage, "/api")]
+//        pub async fn create_message(State(pool): State<DbPool>, new_message: NewMessage) -> Result<Message, ServerFnError> {
+//            use crate::schema::messages;
+//        
+//            let conn = pool.get().await.map_err(|e| ServerFnError::ServerError(e.to_string()));
+//            let test_create_message: Result<(), diesel::result::Error> = conn.interact(move |conn| {
+//                diesel::insert_into(messages::table)
+//                    .values(&new_message)
+//                    .get_result::<Message>(conn)
+//                    .map_err(|e| ServerFnError::ServerError(e.to_string()))
+//            }).await.map_err(|e| ServerFnError::ServerError(e.to_string()))?
+//        }
+//        
+//        #[server(CreateThread, "/api")]
+//        pub async fn create_thread() -> Result<Thread, ServerFnError> {
+//            use crate::schema::threads;
+//            use chrono::Utc;
+//        
+//            let conn = pool.get().await.map_err(|e| ServerFnError::ServerError(e.to_string()));
+//            let test: Result<(), diesel::result::Error> = conn.interact(move |conn| {
+//                let new_thread = Thread {
+//                    id: uuid::Uuid::new_v4().to_string(),
+//                    created_at: Some(Utc::now().naive_utc()),
+//                    updated_at: Some(Utc::now().naive_utc()),
+//                };
+//            
+//                diesel::insert_into(threads::table)
+//                    .values(&new_thread)
+//                    .get_result::<Thread>(conn)
+//                    .map_err(|e| ServerFnError::ServerError(e.to_string()))
+//            }).await.map_err(|e| ServerFnError::ServerError(e.to_string()))?
+//        }
+
 	} else {
 		#[server(SendMessage, "/api", "Url", "send_message")]
 		pub async fn send_message(message: String) -> Result<String, ServerFnError> {
