@@ -1,17 +1,58 @@
 use cfg_if::cfg_if;
+use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ThreadView {
+    pub id: String,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct MessageView {
+    pub id: i32,
+    pub thread_id: Option<String>,
+    pub content: Option<String>,
+    pub role: String,
+    pub active_model: String,
+    pub active_lab: Option<String>,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct NewMessageView {
+    pub thread_id: Option<String>,
+    pub content: Option<String>,
+    pub role: String,
+    pub active_model: String,
+    pub active_lab: Option<String>,
+}
+
+
 cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::schema::*;
-    use diesel::prelude::*;
-    use serde::{Deserialize, Serialize};
     use chrono::NaiveDateTime;
+    use diesel::prelude::*;
 
-    #[derive(Debug, Serialize, Queryable, Deserialize, Identifiable, Insertable)]
+    #[derive(Debug, Queryable, Identifiable, Insertable)]
     #[diesel(table_name = threads)]
     pub struct Thread {
         #[diesel(column_name = id)]
         pub id: String,
         pub created_at: Option<NaiveDateTime>,
         pub updated_at: Option<NaiveDateTime>,
+    }
+
+    impl From<Thread> for ThreadView {
+        fn from(thread: Thread) -> Self {
+            ThreadView {
+                id: thread.id,
+                created_at: thread.created_at.map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc)),
+                updated_at: thread.updated_at.map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc)),
+            }
+        }
     }
 
     // used for querying messages directly from the database
@@ -30,6 +71,21 @@ cfg_if! { if #[cfg(feature = "ssr")] {
         pub updated_at: Option<NaiveDateTime>,
     }
 
+    impl From<Message> for MessageView {
+        fn from(message: Message) -> Self {
+            MessageView {
+                id: message.id,
+                thread_id: message.thread_id,
+                content: message.content,
+                role: message.role,
+                active_model: message.active_model,
+                active_lab: message.active_lab,
+                created_at: message.created_at.map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc)),
+                updated_at: message.updated_at.map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc)),
+            }
+        }
+    }
+
     // message data from the client ("new type" or "insert type" pattern)
     #[derive(Insertable, Deserialize)]
     #[diesel(table_name = messages)]
@@ -39,5 +95,17 @@ cfg_if! { if #[cfg(feature = "ssr")] {
         pub role: String,
         pub active_model: String,
         pub active_lab: Option<String>,
+    }
+
+    impl From<NewMessageView> for NewMessage {
+        fn from (view: NewMessageView) -> Self {
+            NewMessage {
+                thread_id: view.thread_id,
+                content: view.content,
+                role: view.role,
+                active_model: view.active_model,
+                active_lab: view.active_lab,
+            }
+        }
     }
 }}
