@@ -79,7 +79,7 @@ async fn main() {
             handler(request).await.into_response()
         }))
         .route("/api/send_message_stream", axum::routing::get(|Query(params): Query<HashMap<String, String>>| async move {
-            let (tx, rx) = mpsc::channel(1);
+            let (tx, rx) = mpsc::channel(100);
             if let Some(message) = params.get("message") {
                 let message = message.clone();
                 tokio::spawn(async move {
