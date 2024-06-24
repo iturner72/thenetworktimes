@@ -40,6 +40,7 @@ async fn main() {
         pool: pool.clone(),
     };
 
+
     async fn server_fn_handler(
         State(app_state): State<AppState>,
         request: Request<AxumBody>,

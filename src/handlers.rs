@@ -42,7 +42,7 @@ cfg_if! {
             let result: Result<(), diesel::result::Error> = conn.interact(move |conn| {
                 if threads::table.find(&payload.thread_id).first::<Thread>(conn).optional()?.is_none() {
                     let new_thread = Thread {
-                        thread_id: payload.thread_id.clone(),
+                        id: payload.thread_id.clone(),
                         created_at: None,
                         updated_at: None,
                     };

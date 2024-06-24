@@ -10,7 +10,7 @@ pub struct ThreadView {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct MessageView {
+pub struct MessageView {
     pub id: i32,
     pub thread_id: Option<String>,
     pub content: Option<String>,
@@ -22,7 +22,7 @@ struct MessageView {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct NewMessageView {
+pub struct NewMessageView {
     pub thread_id: Option<String>,
     pub content: Option<String>,
     pub role: String,
@@ -36,7 +36,7 @@ cfg_if! { if #[cfg(feature = "ssr")] {
     use chrono::NaiveDateTime;
     use diesel::prelude::*;
 
-    #[derive(Debug, Queryable, Identifiable, Insertable)]
+    #[derive(Debug, Serialize, Deserialize, Queryable, Identifiable, Insertable)]
     #[diesel(table_name = threads)]
     pub struct Thread {
         #[diesel(column_name = id)]
