@@ -5,6 +5,7 @@ use urlencoding;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::{EventSource, MessageEvent, ErrorEvent};
+use crate::models::conversations::NewMessageView;
 use std::rc::Rc;
 
 cfg_if! {
@@ -125,13 +126,72 @@ cfg_if! {
 				error!("Error in send_message_stream: {}", e);
 			}
 		}
+	} 
+}
 
-	} else {
-		#[server(SendMessage, "/api", "Url", "send_message")]
-		pub async fn send_message(message: String) -> Result<String, ServerFnError> {
-			Err("Function not available in CSR".to_string())
-		}
-	}
+#[server(CreateMessage, "/api")]
+pub async fn create_message(new_message_view: NewMessageView) -> Result<(), ServerFnError> {
+    use diesel::prelude::*;
+    use crate::state::AppState;
+    use crate::models::conversations::{NewMessage, Thread};
+    use crate::schema::{messages, threads};
+    use std::fmt;
+
+    #[derive(Debug)]
+    enum CreateMessageError {
+        PoolError(String),
+        InteractionError(String),
+    }
+
+    impl fmt::Display for CreateMessageError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                CreateMessageError::PoolError(e) => write!(f, "Pool error: {}", e),
+                CreateMessageError::InteractionError(e) => write!(f, "Interaction error: {}", e),
+            }
+        }
+    }
+
+    impl From<CreateMessageError> for ServerFnError {
+        fn from(error: CreateMessageError) -> Self {
+            ServerFnError::ServerError(error.to_string())
+        }
+    }
+
+    let app_state = use_context::<AppState>()
+        .expect("Failed to get AppState from context");
+
+    let pool = app_state.pool;
+
+    let conn = pool
+        .get()
+        .await
+        .map_err(|e| CreateMessageError::PoolError(e.to_string()))?;
+
+    conn.interact(move |conn| {
+        let new_message: NewMessage = new_message_view.into();
+
+        if let Some(thread_id) = &new_message.thread_id {
+            if threads::table.find(thread_id).first::<Thread>(conn).optional()?.is_none() {
+                let new_thread = Thread {
+                    id: thread_id.clone(),
+                    created_at: None,
+                    updated_at: None,
+                };
+                diesel::insert_into(threads::table)
+                    .values(&new_thread)
+                    .execute(conn)?;
+            }
+        }
+
+        diesel::insert_into(messages::table)
+            .values(&new_message)
+            .execute(conn)?;
+
+        Ok::<(), diesel::result::Error>(())
+    }).await.map_err(|e| CreateMessageError::InteractionError(e.to_string()))??;
+
+    Ok(())
 }
 
 #[server(CreateMessage, "/api")]
@@ -172,7 +232,8 @@ pub fn Chat() -> impl IntoView {
 			set_is_sending(true);
 			set_response.set("".to_string());
 
-            let event_source = Rc::new(EventSource::new(&format!("/api/send_message_stream?message={}", urlencoding::encode(&message_value))).expect("Failed to connect to SSE endpoint"));
+            let event_source = Rc::new(EventSource::new(&format!("/api/send_message_stream?message={}", urlencoding::encode(&message_value)))
+                .expect("Failed to connect to SSE endpoint"));
 
 			let on_message = {
 				let event_source = Rc::clone(&event_source);
