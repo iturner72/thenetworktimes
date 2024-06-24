@@ -77,9 +77,12 @@ pub fn ThreadList() -> impl IntoView {
             {move || {
                 thread_list.get().into_iter().map(|thread: ThreadView| {
                     view! {
-                        <div class="thread-item">
-                            <p class="thread-id">{thread.id.clone()}</p>
-                            <p class="thread-updated">{thread.updated_at.map(|dt| dt.to_string()).unwrap_or_default()}</p>
+                        <div class="thread-list-container flex flex-col items-center justify-center">
+                            <h2 class="container-title ib text-2xl text-salmon-300">thread list</h2>
+                            <div class="thread-item w-4/12 border-2 border-teal-700">
+                                <p class="thread-id ib text-xl text-teal-400">{thread.id.clone()}</p>
+                                <p class="thread-created ir text-xs text-gray-800">created on:{thread.created_at.map(|dt| dt.to_string()).unwrap_or_default()}</p>
+                            </div>
                         </div>
                     }
                 }).collect::<Vec<_>>()
