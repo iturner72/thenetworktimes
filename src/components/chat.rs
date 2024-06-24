@@ -194,29 +194,6 @@ pub async fn create_message(new_message_view: NewMessageView) -> Result<(), Serv
     Ok(())
 }
 
-#[server(CreateMessage, "/api")]
-pub async fn create_message() -> Result<(), ServerFnError> {
-    use diesel::prelude::*;
-    use crate::state::AppState;
-    use crate::models::conversations::{Message, NewMessage};
-    use crate::schema::messages::dsl::messages;
-
-    let app_state = use_context::<AppState>()
-        .expect("Failed to get AppState from context");
-
-    let pool = app_state.pool;
-
-    let conn = pool
-        .get()
-        .await
-        .map_err(|e| ServerFnError::ServerError(e.to_string()));
-
-    //  going to need to use the error type cast thing here too will make it 
-    //  it's own module and continue
-
-    todo!();
-}
-
 #[component]
 pub fn Chat() -> impl IntoView {
 	let (message, set_message) = create_signal(String::new());
