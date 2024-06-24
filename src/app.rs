@@ -4,6 +4,7 @@ use leptos_meta::*;
 use leptos_router::*;
 
 use crate::pages::settings::Settings;
+use crate::components::threadlist::ThreadList;
 use crate::components::channels::Channels;
 use crate::components::navbar::Navbar;
 use crate::components::chat::Chat;
@@ -40,6 +41,7 @@ pub fn App() -> impl IntoView {
                     <Route path="" view=Chat/>
                     <Route path="settings" view=Settings/>
                     <Route path="channels" view=Channels/>
+                    <Route path="threadlist" view=ThreadList/>
                 </Routes>
             </main>
         </Router>
