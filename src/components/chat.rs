@@ -64,6 +64,9 @@ cfg_if! {
 
 			pub async fn send_message(&self, message: String, tx: mpsc::Sender<Result<Event, anyhow::Error>>) -> Result<(), Error> {
 				info!("Sending message to OpenAI API");
+
+
+
 				let response = self.client.post("https://api.openai.com/v1/chat/completions")
 					.header("Authorization", format!("Bearer {}", self.api_key))
 					.header("Content-Type", "application/json")
@@ -129,6 +132,29 @@ cfg_if! {
 			Err("Function not available in CSR".to_string())
 		}
 	}
+}
+
+#[server(CreateMessage, "/api")]
+pub async fn create_message() -> Result<(), ServerFnError> {
+    use diesel::prelude::*;
+    use crate::state::AppState;
+    use crate::models::conversations::{Message, NewMessage};
+    use crate::schema::messages::dsl::messages;
+
+    let app_state = use_context::<AppState>()
+        .expect("Failed to get AppState from context");
+
+    let pool = app_state.pool;
+
+    let conn = pool
+        .get()
+        .await
+        .map_err(|e| ServerFnError::ServerError(e.to_string()));
+
+    //  going to need to use the error type cast thing here too will make it 
+    //  it's own module and continue
+
+    todo!();
 }
 
 #[component]
