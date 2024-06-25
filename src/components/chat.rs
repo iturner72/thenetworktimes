@@ -188,6 +188,7 @@ pub async fn create_message(new_message_view: NewMessageView) -> Result<(), Serv
             .values(&new_message)
             .execute(conn)?;
 
+        info!("Message successfully inserted into the database: {:?}", new_message);
         Ok::<(), diesel::result::Error>(())
     }).await.map_err(|e| CreateMessageError::InteractionError(e.to_string()))??;
 
@@ -204,55 +205,73 @@ pub fn Chat() -> impl IntoView {
 		let message_value = message.get();
 		let set_response = set_response.clone();
 		let set_is_sending = set_is_sending.clone();
+        let role = "user";
 
 		spawn_local(async move {
 			set_is_sending(true);
 			set_response.set("".to_string());
 
-            let event_source = Rc::new(EventSource::new(&format!("/api/send_message_stream?message={}", urlencoding::encode(&message_value)))
-                .expect("Failed to connect to SSE endpoint"));
+            let new_message_view = NewMessageView {
+                thread_id: None, // TODO add dynamic thread_id
+                content: Some(message_value.clone()),
+                role: role.to_string(),
+                active_model: "gpt-3.5-turbo".to_string(),
+                active_lab: Some("openai".to_string()),
+            };
 
-			let on_message = {
-				let event_source = Rc::clone(&event_source);
-				Closure::wrap(Box::new(move |event: MessageEvent| {
-					let data = event.data().as_string().unwrap();
-					if data == "[DONE]" {
-						set_is_sending.set(false);
-						event_source.close();
-					} else {
-						set_response.update(|resp| {
-                            let processed_data = data.replace("\\n", "\n");
-							resp.push_str(&processed_data);
-							resp.to_string();
-						});
-					}
-				}) as Box<dyn FnMut(_)>)
-			};
+            match create_message(new_message_view).await {
+                Ok(_) => {
 
-			event_source.set_onmessage(Some(on_message.as_ref().unchecked_ref()));
-			on_message.forget();
-
-			let on_error = {
-				let event_source = Rc::clone(&event_source);
-				Closure::wrap(Box::new(move |event: ErrorEvent| {
-                    let error_message = format!(
-						"Error receiving message: type = {:?}, message = {:?}, filename = {:?}, lineno = {:?}, colno = {:?}, error = {:?}",
-                        event.type_(),
-                        event.message(),
-                        event.filename(),
-                        event.lineno(),
-                        event.colno(),
-                        event.error()
-                    );
-					error!("{}", error_message);
-					set_is_sending.set(false);
-					set_response(error_message);
-					event_source.close();
-				}) as Box<dyn FnMut(_)>)
-			};
-
-			event_source.set_onerror(Some(on_error.as_ref().unchecked_ref()));
-			on_error.forget();
+                    let event_source = Rc::new(EventSource::new(&format!("/api/send_message_stream?message={}", urlencoding::encode(&message_value)))
+                        .expect("Failed to connect to SSE endpoint"));
+        
+        			let on_message = {
+        				let event_source = Rc::clone(&event_source);
+        				Closure::wrap(Box::new(move |event: MessageEvent| {
+        					let data = event.data().as_string().unwrap();
+        					if data == "[DONE]" {
+        						set_is_sending.set(false);
+        						event_source.close();
+        					} else {
+        						set_response.update(|resp| {
+                                    let processed_data = data.replace("\\n", "\n");
+        							resp.push_str(&processed_data);
+        							resp.to_string();
+        						});
+        					}
+        				}) as Box<dyn FnMut(_)>)
+        			};
+        
+        			event_source.set_onmessage(Some(on_message.as_ref().unchecked_ref()));
+        			on_message.forget();
+        
+        			let on_error = {
+        				let event_source = Rc::clone(&event_source);
+        				Closure::wrap(Box::new(move |event: ErrorEvent| {
+                            let error_message = format!(
+        						"Error receiving message: type = {:?}, message = {:?}, filename = {:?}, lineno = {:?}, colno = {:?}, error = {:?}",
+                                event.type_(),
+                                event.message(),
+                                event.filename(),
+                                event.lineno(),
+                                event.colno(),
+                                event.error()
+                            );
+        					error!("{}", error_message);
+        					set_is_sending.set(false);
+        					set_response(error_message);
+        					event_source.close();
+        				}) as Box<dyn FnMut(_)>)
+        			};
+        
+        			event_source.set_onerror(Some(on_error.as_ref().unchecked_ref()));
+        			on_error.forget();
+                }
+                Err(e) => {
+                    error!("Failed to create message: {:?}", e);
+                    set_is_sending(false);
+                }
+            }
 		});
 	};
 

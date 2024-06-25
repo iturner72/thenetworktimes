@@ -87,7 +87,7 @@ cfg_if! { if #[cfg(feature = "ssr")] {
     }
 
     // message data from the client ("new type" or "insert type" pattern)
-    #[derive(Insertable, Deserialize)]
+    #[derive(Debug, Insertable, Deserialize)]
     #[diesel(table_name = messages)]
     pub struct NewMessage {
         pub thread_id: Option<String>,
