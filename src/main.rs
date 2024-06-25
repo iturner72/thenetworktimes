@@ -20,9 +20,13 @@ async fn main() {
 	use thenetworktimes::fileserv::file_and_error_handler;
 	use thenetworktimes::components::chat::{SseStream, send_message_stream};
     use thenetworktimes::database::db::establish_connection;
-//    use thenetworktimes::handlers::create_message;
     use thenetworktimes::state::AppState;
     use thenetworktimes::services::hubble::*;
+
+//    use thenetworktimes::handlers::create_message;
+    // this is a sanity check (simple create_message function) which conflicts 
+    // with the server function of the same name, so i break my no-comments rule
+    // here since it's just so convenient (i should write tests for these things)
 
     dotenv().ok();
     env_logger::init_from_env(Env::default().default_filter_or("info"));
@@ -59,7 +63,7 @@ async fn main() {
             "/api/*fn_name",
             get(server_fn_handler).post(server_fn_handler),
         )
- //       .route("/api/create_message", post(create_message))
+ //        .route("/api/create_message", post(create_message))
         .route("/api/userNameProofsByFid/:fid", get(get_username_proofs_by_fid))
         .route("/api/userDataByFid", get(get_user_data_by_fid))
         .route("/api/castById/:fid/:hash", get(get_cast_by_id))

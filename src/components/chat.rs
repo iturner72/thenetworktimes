@@ -212,7 +212,7 @@ pub fn Chat() -> impl IntoView {
 			set_response.set("".to_string());
 
             let new_message_view = NewMessageView {
-                thread_id: None, // TODO add dynamic thread_id
+                thread_id: Some("1738".to_string()), // TODO add dynamic thread_id
                 content: Some(message_value.clone()),
                 role: role.to_string(),
                 active_model: "gpt-3.5-turbo".to_string(),
