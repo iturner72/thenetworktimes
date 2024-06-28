@@ -1,71 +1,16 @@
 use cfg_if::cfg_if;
 use leptos::*;
 use leptos_router::A;
-use serde::Deserialize;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use log::info;
-
-#[derive(Clone, Debug, Deserialize)]
-#[allow(non_snake_case)]
-pub struct Channel {
-    pub createdAt: u64,
-    pub description: String,
-    pub followerCount: u64,
-    pub id: String,
-    pub imageUrl: String,
-    pub leadFid: u64,
-    pub moderatorFid: Option<u64>,
-    pub name: String,
-    pub url: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-struct ChannelsResult {
-    channels: Vec<Channel>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-struct ChannelsResponse {
-    result: ChannelsResult,
-}
+use crate::models::farcaster::{Channel, ChannelsResponse};
 
 cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         use gloo_net::http::Request;
-
-        #[derive(Clone, Debug, Deserialize)]
-        #[allow(non_snake_case)]
-        #[allow(dead_code)] // we only need data for now
-        struct UserDataResponse {
-            data: UserData,
-            hash: String,
-            hashScheme: String,
-            signature: String,
-            signatureScheme: String,
-            signer: String,
-        }
-
-        #[derive(Clone, Debug, Deserialize)]
-        #[allow(non_snake_case)]
-        #[allow(dead_code)] // we only need userDataBody
-        struct UserData {
-            fid: u64,
-            network: String,
-            timestamp: u64,
-            #[serde(rename = "type")]
-            message_type: String,
-            userDataBody: UserDataBody,
-        }
-
-        #[derive(Clone, Debug, Deserialize)]
-        #[allow(non_snake_case)]
-        struct UserDataBody {
-            #[serde(rename = "type")]
-            data_type: String,
-            value: String,
-        }
+        use crate::models::farcaster::UserDataResponse;
 
         async fn fetch_channels() -> Result<ChannelsResponse, String> {
             match Request::get("/api/channels").send().await {
@@ -94,8 +39,8 @@ cfg_if! {
                     Ok(response) => {
                         match response.json::<UserDataResponse>().await {
                             Ok(data) => {
-                                let username = if data.data.userDataBody.data_type == "USER_DATA_TYPE_USERNAME" {
-                                    Some(data.data.userDataBody.value)
+                                let username = if data.data.user_data_body.data_type == "USER_DATA_TYPE_USERNAME" {
+                                    Some(data.data.user_data_body.value)
                                 } else {
                                     None
                                 }.ok_or_else(|| "Username not found".to_string())?;

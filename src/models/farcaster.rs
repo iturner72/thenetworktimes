@@ -107,3 +107,29 @@ pub struct TargetCastId {
     pub fid: u64,
     pub hash: String,
 }
+
+// channels
+
+#[derive(Clone, Debug, Deserialize)]
+#[allow(non_snake_case)]
+pub struct Channel {
+    pub createdAt: u64,
+    pub description: String,
+    pub followerCount: u64,
+    pub id: String,
+    pub imageUrl: String,
+    pub leadFid: u64,
+    pub moderatorFid: Option<u64>,
+    pub name: String,
+    pub url: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ChannelsResult {
+    pub channels: Vec<Channel>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ChannelsResponse {
+    pub result: ChannelsResult,
+}
