@@ -157,7 +157,7 @@ pub fn Channels() -> impl IntoView {
                                     <p class="ir text-sm text-mint-500">{"followers: "}{channel.followerCount}</p>
                                     {move || match lead_usernames.get().get(&fid) {
                                         Some(username) => view! {
-                                            <p class="ib text-sm text-mint-700">{"lead: "}{username}</p>
+                                            <p class="ib text-sm text-mint-700">{username}</p>
                                         },
                                         None => view! {
                                             <p class="ib text-sm text-mint-700">"chill"</p>
