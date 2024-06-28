@@ -1,5 +1,6 @@
 use cfg_if::cfg_if;
 use leptos::*;
+use leptos_router::A;
 use serde::Deserialize;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
@@ -225,6 +226,9 @@ pub fn Channels() -> impl IntoView {
                                 <div class="flex-grow flex flex-col items-center md:items-start justify-center text-center md:text-left">
                                     <a href={channel.url.clone()} class="ib text-pistachio-500 hover:text-pistachio-500 text-xl pb-2">{&channel.id}</a>
                                     <p class="ir text-pistachio-200 text-base w-full">{&channel.description}</p>
+                                    <A href=format!("/casts/{}", channel.url.replace("https://warpcast.com/~/channel/", "")) class="ib text-salmon-600 hover:text-salmon-700 text-sm mt-2">
+                                        "view casts"
+                                    </A>
                                 </div>
                             </div>
                         </li>
