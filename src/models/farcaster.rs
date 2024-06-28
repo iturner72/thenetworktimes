@@ -50,9 +50,11 @@ pub struct CastResponse {
 pub struct UserDataResponse {
     pub data: UserData,
     pub hash: String,
-    pub hash_scheme: String,
+    #[serde(default)]
+    pub hash_scheme: Option<String>,
     pub signature: String,
-    pub signature_scheme: String,
+    #[serde(default)]
+    pub signature_scheme: Option<String>,
     pub signer: String,
 }
 
@@ -63,6 +65,7 @@ pub struct UserData {
     pub timestamp: i64,
     #[serde(rename = "type")]
     pub data_type: String,
+    #[serde(rename = "userDataBody")]
     pub user_data_body: UserDataBody,
 }
 
