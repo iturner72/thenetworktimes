@@ -1,70 +1,16 @@
 use cfg_if::cfg_if;
 use leptos::*;
-use serde::Deserialize;
-use chrono::{DateTime, Utc};
+use leptos_router::A;
+use chrono::{DateTime, NaiveDateTime, Utc};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use log::info;
-
-#[derive(Clone, Debug, Deserialize)]
-#[allow(non_snake_case)]
-pub struct Channel {
-    pub createdAt: u64,
-    pub description: String,
-    pub followerCount: u64,
-    pub id: String,
-    pub imageUrl: String,
-    pub leadFid: u64,
-    pub moderatorFid: Option<u64>,
-    pub name: String,
-    pub url: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-struct ChannelsResult {
-    channels: Vec<Channel>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-struct ChannelsResponse {
-    result: ChannelsResult,
-}
+use crate::models::farcaster::{Channel, ChannelsResponse};
 
 cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         use gloo_net::http::Request;
-
-        #[derive(Clone, Debug, Deserialize)]
-        #[allow(non_snake_case)]
-        #[allow(dead_code)] // we only need data for now
-        struct UserDataResponse {
-            data: UserData,
-            hash: String,
-            hashScheme: String,
-            signature: String,
-            signatureScheme: String,
-            signer: String,
-        }
-
-        #[derive(Clone, Debug, Deserialize)]
-        #[allow(non_snake_case)]
-        #[allow(dead_code)] // we only need userDataBody
-        struct UserData {
-            fid: u64,
-            network: String,
-            timestamp: u64,
-            #[serde(rename = "type")]
-            message_type: String,
-            userDataBody: UserDataBody,
-        }
-
-        #[derive(Clone, Debug, Deserialize)]
-        #[allow(non_snake_case)]
-        struct UserDataBody {
-            #[serde(rename = "type")]
-            data_type: String,
-            value: String,
-        }
+        use crate::models::farcaster::UserDataResponse;
 
         async fn fetch_channels() -> Result<ChannelsResponse, String> {
             match Request::get("/api/channels").send().await {
@@ -93,8 +39,8 @@ cfg_if! {
                     Ok(response) => {
                         match response.json::<UserDataResponse>().await {
                             Ok(data) => {
-                                let username = if data.data.userDataBody.data_type == "USER_DATA_TYPE_USERNAME" {
-                                    Some(data.data.userDataBody.value)
+                                let username = if data.data.user_data_body.data_type == "USER_DATA_TYPE_USERNAME" {
+                                    Some(data.data.user_data_body.value)
                                 } else {
                                     None
                                 }.ok_or_else(|| "Username not found".to_string())?;
@@ -129,9 +75,10 @@ cfg_if! {
 
 #[allow(deprecated)]
 fn format_date(timestamp: u64) -> String {
-    let naive_datetime = chrono::NaiveDateTime::from_timestamp(timestamp as i64, 0);
+    let naive_datetime = NaiveDateTime::from_timestamp(timestamp as i64, 0);
     let datetime: DateTime<Utc> = DateTime::from_utc(naive_datetime, Utc);
-    datetime.format("%B %Y").to_string()
+    datetime.format("%B '%y").to_string().to_lowercase()
+    
 }
 
 #[component]
@@ -211,7 +158,7 @@ pub fn Channels() -> impl IntoView {
                                     <p class="ir text-sm text-mint-500">{"followers: "}{channel.followerCount}</p>
                                     {move || match lead_usernames.get().get(&fid) {
                                         Some(username) => view! {
-                                            <p class="ib text-sm text-mint-700">{"lead: "}{username}</p>
+                                            <p class="ib text-sm text-mint-700">{username}</p>
                                         },
                                         None => view! {
                                             <p class="ib text-sm text-mint-700">"chill"</p>
@@ -225,6 +172,9 @@ pub fn Channels() -> impl IntoView {
                                 <div class="flex-grow flex flex-col items-center md:items-start justify-center text-center md:text-left">
                                     <a href={channel.url.clone()} class="ib text-pistachio-500 hover:text-pistachio-500 text-xl pb-2">{&channel.id}</a>
                                     <p class="ir text-pistachio-200 text-base w-full">{&channel.description}</p>
+                                    <A href=format!("/casts/{}", channel.url.replace("https://warpcast.com/~/channel/", "")) class="ib text-salmon-600 hover:text-salmon-700 text-sm mt-2">
+                                        "view casts"
+                                    </A>
                                 </div>
                             </div>
                         </li>
