@@ -1,7 +1,7 @@
 use cfg_if::cfg_if;
 use leptos::*;
 use leptos_router::A;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use log::info;
@@ -75,9 +75,10 @@ cfg_if! {
 
 #[allow(deprecated)]
 fn format_date(timestamp: u64) -> String {
-    let naive_datetime = chrono::NaiveDateTime::from_timestamp(timestamp as i64, 0);
+    let naive_datetime = NaiveDateTime::from_timestamp(timestamp as i64, 0);
     let datetime: DateTime<Utc> = DateTime::from_utc(naive_datetime, Utc);
-    datetime.format("%B %Y").to_string()
+    datetime.format("%B '%y").to_string().to_lowercase()
+    
 }
 
 #[component]
