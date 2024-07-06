@@ -61,20 +61,17 @@ cfg_if! {
         
         pub async fn get_casts_by_parent(
             Path(encoded_url): Path<String>,
-            Query(query): Query<HashMap<String, String>>,
+            Query(query): Query<HashMap<String, u64>>,
         ) -> Result<Json<Value>, StatusCode> {
             info!("Fetching Casts by Channel");
             let hubble_url = env::var("HUBBLE_URL").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-            let offset_value = "0".to_string();
-            let offset = query.get("offset").unwrap_or(&offset_value);
-
-            let limit_value = "40".to_string();
-            let limit = query.get("limit").unwrap_or(&limit_value);
+            let page = query.get("page").cloned().unwrap_or(1);
+            let limit = query.get("limit").cloned().unwrap_or(40);
+            let _offset = (page - 1) * limit;
 
             let url = format!(
-                "{}:2281/v1/castsByParent?url={}&offset={}&limit={}",
-                hubble_url, encoded_url, offset, limit
+                "{}/castsByChannel/{}",
+                hubble_url, encoded_url 
             );
 
             info!("Final URL: {}", url);

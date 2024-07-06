@@ -28,10 +28,9 @@ pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Res
         ServerFnError::ServerError(e.to_string())
     }
 
-    let offset = (page - 1) * limit;
     let mut query_params = HashMap::new();
-    query_params.insert("offset".to_string(), offset.to_string());
-    query_params.insert("limit".to_string(), limit.to_string());
+    query_params.insert("page".to_string(), page);
+    query_params.insert("limit".to_string(), limit);
 
     let channel_url = format!("https://warpcast.com/~/channel/{}", channel);
     let encoded_channel_url = urlencoding::encode(&channel_url);
