@@ -1,14 +1,60 @@
 use leptos::*;
-use crate::models::farcaster::{Cast, CastResponse};
+use crate::models::farcaster::Cast;
 
 #[server(GetCastsByChannel, "/api")]
-pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Result<CastResponse, ServerFnError> {
-    todo!("fetch casts by channel")
+pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Result<Vec<Cast>, ServerFnError> {
+    use axum::extract::{Query, Path};
+    use serde_json::Value;
+    use std::collections::HashMap;
+    use crate::services::hubble::get_casts_by_parent;
+    use std::fmt;
+
+    #[derive(Debug)]
+    enum CastError {
+        FetchError(String),
+        ParseError(String),
+    }
+
+    impl fmt::Display for CastError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                CastError::FetchError(e) => write!(f, "Fetch error: {}", e),
+                CastError::ParseError(e) => write!(f, "Parse error: {}", e),
+            }
+        }
+    }
+    
+    fn to_server_error(e: CastError) -> ServerFnError {
+        ServerFnError::ServerError(e.to_string())
+    }
+
+    let offset = (page - 1) * limit;
+    let mut query_params = HashMap::new();
+    query_params.insert("offset".to_string(), offset);
+    query_params.insert("limit".to_string(), limit);
+
+    let casts_response = get_casts_by_parent(
+        Path(channel),
+        Query(query_params)
+    )
+    .await
+    .map_err(|e| CastError::FetchError(format!("Failed to fetch casts: {:?}", e)))
+    .map_err(to_server_error)?;
+
+    let cast_response: Value = serde_json::from_value(casts_response.0)
+        .map_err(|e| CastError::ParseError(format!("Failed to parse cast response: {:?}", e)))
+        .map_err(to_server_error)?;
+
+    let casts: Vec<Cast> = serde_json::from_value(cast_response["messages"].clone())
+        .map_err(|e| CastError::ParseError(format!("Failed to parse casts: {:?}", e)))
+        .map_err(to_server_error)?;
+
+    Ok(casts)
 }
 
 #[component]
 pub fn CastList() -> impl IntoView {
-    let (channel, set_channel) = create_signal("networktimes".to_string());
+    let (channel, _set_channel) = create_signal("networktimes".to_string());
     let (cast_list, set_cast_list) = create_signal(Vec::new());
     let (page, set_page) = create_signal(1u64);
     let (error, set_error) = create_signal(None::<String>);
@@ -22,11 +68,11 @@ pub fn CastList() -> impl IntoView {
         async move {
             set_is_loading.set(true);
             match get_casts_by_channel(current_channel, current_page, limit).await {
-                Ok(response) => {
-                    if response.messages.is_empty() {
+                Ok(fetched_casts) => {
+                    if fetched_casts.is_empty() {
                         set_has_more.set(false);
                     } else {
-                        set_cast_list.update(|list| list.extend(response.messages));
+                        set_cast_list.update(|list| list.extend(fetched_casts));
                     }
                     set_error.set(None);
                 }
@@ -71,7 +117,7 @@ pub fn CastList() -> impl IntoView {
                             <div class="cast-item bg-teal-800 p-4 shadow hover:bg-teal-900 transition duration-0">
                                 <p class="ib text-pistachio-500">"Author FID: "{cast.data.fid}</p>
                                 <p class="ir text-pistachio-200">
-                                    {cast.data.cast_add_body.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&"No text")}
+                                    {cast.data.cast_add_body.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("No text"))}
                                 </p>
                                 <p class="ir text-xs text-salmon-400">
                                     {"Timestamp: "}{cast.data.timestamp}
@@ -100,18 +146,20 @@ pub fn CastList() -> impl IntoView {
             <div>
                 {move || {
                     if is_loading.get() {
-                        view! { <p class="text-indigo-300">"Loading..."</p> }
+                        view! { <div><p class="text-indigo-300">"Loading..."</p></div> }
                     } else if has_more.get() {
                         view! {
-                            <button
-                                on:click=load_more
-                                class="alumni-sans-regular mt-4 px-4 py-2 bg-stone-700 text-white hover:bg-stone-600"
-                            >
-                                "Load More"
-                            </button>
+                            <div>
+                                <button
+                                    on:click=load_more
+                                    class="alumni-sans-regular mt-4 px-4 py-2 bg-stone-700 text-white hover:bg-stone-600"
+                                >
+                                    "Load More"
+                                </button>
+                            </div>
                         }
                     } else {
-                        view! { <p class="text-indigo-300">"No more casts to load."</p> }
+                        view! { <div><p class="text-indigo-300">"No more casts to load."</p></div> }
                     }
                 }}
             </div>
