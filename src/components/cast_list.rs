@@ -33,8 +33,10 @@ pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Res
     query_params.insert("offset".to_string(), offset);
     query_params.insert("limit".to_string(), limit);
 
+    let url = format!("https://warpcast.com/~/channel/{}", channel);
+
     let casts_response = get_casts_by_parent(
-        Path(channel),
+        Path(url),
         Query(query_params)
     )
     .await
