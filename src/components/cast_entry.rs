@@ -86,7 +86,7 @@ pub fn CastEntry(cast: Cast) -> impl IntoView {
                     }}
                 </div>
                 <p class="ir text-pistachio-200">
-                    {cast.data.cast_add_body.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&"N/A".to_string())}
+                    {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&"N/A".to_string())}
                 </p>
             </div>
         </div>

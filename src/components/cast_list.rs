@@ -104,7 +104,7 @@ pub fn CastList() -> impl IntoView {
 
     view! {
         <div class="cast-list">
-            <h2 class="text-2xl alumni-sans-bold text-indigo-800 hover:underline">
+            <h2 class="text-2xl ib text-gray-700 hover:underline">
                 <a href={move || format!("https://warpcast.com/~/channel/{}", channel.get())} target="_blank" rel="noopener noreferrer">
                     {move || format!("/{}", channel.get())}
                 </a>
@@ -119,7 +119,7 @@ pub fn CastList() -> impl IntoView {
                             <div class="cast-item bg-teal-800 p-4 shadow hover:bg-teal-900 transition duration-0">
                                 <p class="ib text-pistachio-500">"Author FID: "{cast.data.fid}</p>
                                 <p class="ir text-pistachio-200">
-                                    {cast.data.cast_add_body.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("No text"))}
+                                    {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("No text"))}
                                 </p>
                                 <p class="ir text-xs text-salmon-400">
                                     {"Timestamp: "}{cast.data.timestamp}
@@ -130,7 +130,7 @@ pub fn CastList() -> impl IntoView {
                                 <p class="ir text-xs text-salmon-400">
                                     {"Type: "}{&cast.data.cast_type}
                                 </p>
-                                {cast.data.cast_add_body.as_ref().map(|body| view! {
+                                {cast.data.castAddBody.as_ref().map(|body| view! {
                                     <div>
                                         <p class="ir text-xs text-salmon-400">
                                             {"Mentions: "}{body.mentions.len()}

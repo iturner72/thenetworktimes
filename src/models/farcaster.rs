@@ -9,8 +9,9 @@ pub struct Cast {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[allow(non_snake_case)]
 pub struct CastData {
-    pub cast_add_body: Option<CastAddBody>,
+    pub castAddBody: Option<CastAddBody>,
     pub fid: u64,
     pub network: String,
     pub timestamp: u64,
@@ -19,12 +20,13 @@ pub struct CastData {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[allow(non_snake_case)]
 pub struct CastAddBody {
     pub embeds: Vec<Embed>,
-    pub embeds_deprecated: Vec<String>,
+    pub embedsDeprecated: Vec<String>,
     pub mentions: Vec<u64>,
-    pub mentions_positions: Vec<u32>,
-    pub parent_cast_id: Option<ParentCastId>,
+    pub mentionsPositions: Vec<u32>,
+    pub parentCastId: Option<ParentCastId>,
     pub text: Option<String>,
 }
 
