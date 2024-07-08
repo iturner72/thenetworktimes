@@ -148,41 +148,6 @@ pub fn CastList() -> impl IntoView {
                         }
                     }
                 />
-
-//                    okay how the heck do I get this For leptos csr component thingy to render the timestamp, network, cast_type to the right, like i have the mentions and embeds on the left?
-//
-//        view! {
-//            <div class="cast-item bg-teal-800 p-4 shadow hover:bg-teal-900 border-2 border-teal-900 hover:border-teal-800 transition duration-0">
-//                <p class="ib text-md text-pistachio-500">"Author FID: "{cast.data.fid}</p>
-//                <p class="ir text-md text-pistachio-200">
-//                    {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("No text"))}
-//                </p>
-//                <div class="flex flex-row justify-between">
-//                  <div>
-//                    <p class="ir text-xs text-gray-800">
-//                        {"Timestamp: "}{cast.data.timestamp}
-//                    </p>
-//                    <p class="ir text-xs text-gray-800">
-//                        {"Network: "}{&cast.data.network}
-//                    </p>
-//                    <p class="ir text-xs text-gray-800">
-//                        {"Type: "}{&cast.data.cast_type}
-//                    </p>
-//                  </div>
-//                  {cast.data.castAddBody.as_ref().map(|body| view! {
-//                    <div class="flex flex-row items-center justify-left space-x-4">
-//                        <p class="ir text-xs text-gray-700">
-//                            {"Mentions: "}{body.mentions.len()}
-//                        </p>
-//                        <p class="ir text-xs text-gray-700">
-//                            {"Embeds: "}{body.embeds.len()}
-//                        </p>
-//                    </div>
-//                  })}
-//                </div>
-//            </div>
-//        }
-//
             </div>
             <div>
                 {move || {

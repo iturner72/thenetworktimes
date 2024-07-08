@@ -10,6 +10,7 @@ pub fn Navbar() -> impl IntoView {
             <A href="/casts" class="text-2xl text-salmon-400 hover:text-salmon-600">"casts"</A>
             <A href="/threadlist" class="text-2xl text-salmon-400 hover:text-salmon-600">"threads"</A>
             <A href="/settings" class="text-2xl text-salmon-400 hover:text-salmon-600">"gear"</A>
+            <A href="/profile" class="text-2xl text-salmon-400 hover:text-salmon-600">"pfp"</A>
         </div>
     }
 }

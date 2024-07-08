@@ -9,6 +9,7 @@ use crate::components::channels::Channels;
 use crate::components::navbar::Navbar;
 use crate::components::chat::Chat;
 use crate::components::cast_list::CastList;
+use crate::components::profile::Profile;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -44,6 +45,7 @@ pub fn App() -> impl IntoView {
                     <Route path="casts" view=CastList/>
                     <Route path="threadlist" view=ThreadList/>
                     <Route path="settings" view=Settings/>
+                    <Route path="profile" view=Profile/>
                 </Routes>
             </main>
         </Router>
