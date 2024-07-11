@@ -144,7 +144,7 @@ pub fn Channels(
     });
 
     view! {
-        <div class="channels-component-view w-5/12 md:w-3/12 xl:w-2/12 p-2 mx-auto">
+        <div class="channels-component-view w-7/12 md:w-3/12 xl:w-2/12 p-2 mx-auto">
             <h1 class="text-2xl ib text-salmon-300 text-center mb-4">"channels"</h1>
             {move || error_message().map(|err| view! {
                 <p class="text-salmon-800">{err}</p>

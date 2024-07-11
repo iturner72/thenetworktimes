@@ -8,7 +8,7 @@ pub fn Home() -> impl IntoView {
     let (channel, set_channel) = create_signal("networktimes".to_string());
 
     view! {
-        <div class="home-feed-container flex flex-row justify-center pt-2">
+        <div class="home-feed-container flex flex-col md:flex-row justify-center pt-2">
             <Channels set_active_channel=set_channel/>
             <CastList active_channel=channel/>
         </div>
