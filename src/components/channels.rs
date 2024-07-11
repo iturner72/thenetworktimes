@@ -82,7 +82,9 @@ fn format_date(timestamp: u64) -> String {
 }
 
 #[component]
-pub fn Channels() -> impl IntoView {
+pub fn Channels(
+    set_active_channel: WriteSignal<String>
+) -> impl IntoView {
     let (channels, set_channels) = create_signal(Vec::new());
     let (lead_usernames, set_lead_usernames) = create_signal(HashMap::new());
     let (error_message, set_error_message) = create_signal(None);
@@ -142,44 +144,53 @@ pub fn Channels() -> impl IntoView {
     });
 
     view! {
-        <div class="w-11/12 lg:w-8/12 xl:w-5/12 p-6 mx-auto">
-            <h1 class="text-2xl ib text-salmon-300 text-center mb-4">"Channels"</h1>
+        <div class="channels-component-view w-5/12 md:w-3/12 xl:w-2/12 p-2 mx-auto">
+            <h1 class="text-2xl ib text-salmon-300 text-center mb-4">"channels"</h1>
             {move || error_message().map(|err| view! {
                 <p class="text-salmon-800">{err}</p>
             })}
-            <ul class="space-y-2">
-                {move || channels().iter().map(|channel| {
-                    let fid = channel.leadFid;
-                    view! {
-                        <li class="bg-teal-800 p-4 shadow hover:bg-teal-900 transition duration-0">
-                            <div class="flex flex-col md:flex-row items-center md:items-center space-y-4 md:space-y-0 md:space-x-12">
-                                <div class="flex-shrink-0 flex flex-col items-center md:items-start justify-center text-center md:text-left w-40">
-                                    <img src={channel.imageUrl.clone()} alt={channel.id.clone()} class="w-16 h-16 rounded-full mb-2"/>
-                                    <p class="ir text-sm text-mint-500">{"followers: "}{channel.followerCount}</p>
-                                    {move || match lead_usernames.get().get(&fid) {
-                                        Some(username) => view! {
-                                            <p class="ib text-sm text-mint-700">{username}</p>
-                                        },
-                                        None => view! {
-                                            <p class="ib text-sm text-mint-700">"chill"</p>
-                                        },
-                                    }}
-                                    {channel.moderatorFid.map(|fid| view! {
-                                        <p class="ib text-sm text-mint-700">{"moderator fid: "}{fid}</p>
-                                    })}
-                                    <p class="ir text-xs text-salmon-400">{"created: "}{format_date(channel.createdAt)}</p>
+            <ul class="channels-list flex flex-col">
+                {move || {
+                    let channels = channels();
+                    channels.iter().map(|channel| {
+                        let fid = channel.leadFid;
+                        let channel_id = channel.id.clone();
+                        view! {
+                            <button 
+                                class="channel-item bg-teal-800 p-2 shadow hover:bg-teal-900 transition duration-0 group"
+                                on:click=move |_| set_active_channel(channel_id.clone())
+                            >
+                                <div class="channel-item-info-container flex flex-col items-start">
+                                    <div class="channel-avatar-chip flex flex-row items-center justify-between text-center space-x-4">
+                                        <img src={channel.imageUrl.clone()} alt={channel.id.clone()} class="w-10 h-10 rounded-full"/>
+                                        <div class="title-v-stack flex flex-col items-start">
+                                            <a href={channel.url.clone()} class="ib text-base text-pistachio-500 hover:text-pistachio-500 pb-2">{&channel.id}</a>
+                                            {move || match lead_usernames.get().get(&fid) {
+                                                Some(username) => view! {
+                                                    <p class="ib text-xs text-mint-700">{username}</p>
+                                                },
+                                                None => view! {
+                                                    <p class="ib text-xs text-mint-700">"chill"</p>
+                                                },
+                                            }}
+                                        </div>
+                                    </div>
+                                    <div class="description-v-stack hidden group-hover:flex flex-col items-center justify-center text-center mt-4 w-full">
+                                        <p class="ir text-pistachio-200 text-xs w-full">{&channel.description}</p>
+                                        {channel.moderatorFid.map(|fid| view! {
+                                            <p class="ib text-sm text-mint-700">{"moderator fid: "}{fid}</p>
+                                        })}
+                                        <p class="ir text-xs text-salmon-400">{"created: "}{format_date(channel.createdAt)}</p>
+                                        <p class="ir text-xs text-mint-500">{"followers: "}{channel.followerCount}</p>
+                                        <A href=format!("/casts/{}", channel.url.replace("https://warpcast.com/~/channel/", "")) class="ib text-salmon-600 hover:text-salmon-700 text-sm mt-2">
+                                            "view casts"
+                                        </A>
+                                    </div>
                                 </div>
-                                <div class="flex-grow flex flex-col items-center md:items-start justify-center text-center md:text-left">
-                                    <a href={channel.url.clone()} class="ib text-pistachio-500 hover:text-pistachio-500 text-xl pb-2">{&channel.id}</a>
-                                    <p class="ir text-pistachio-200 text-base w-full">{&channel.description}</p>
-                                    <A href=format!("/casts/{}", channel.url.replace("https://warpcast.com/~/channel/", "")) class="ib text-salmon-600 hover:text-salmon-700 text-sm mt-2">
-                                        "view casts"
-                                    </A>
-                                </div>
-                            </div>
-                        </li>
-                    }
-                }).collect::<Vec<_>>()}
+                            </button>
+                        }
+                    }).collect::<Vec<_>>()
+                }}
             </ul>
         </div>
     }

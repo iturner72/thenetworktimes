@@ -55,8 +55,10 @@ pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Res
 }
 
 #[component]
-pub fn CastList() -> impl IntoView {
-    let (channel, _set_channel) = create_signal("networktimes".to_string());
+pub fn CastList(
+    active_channel: ReadSignal<String>
+) -> impl IntoView {
+//    let (channel, _set_channel) = create_signal("networktimes".to_string());
     let (cast_list, set_cast_list) = create_signal(Vec::new());
     let (page, set_page) = create_signal(1u64);
     let (error, set_error) = create_signal(None::<String>);
@@ -66,7 +68,7 @@ pub fn CastList() -> impl IntoView {
 
     let fetch_casts = create_action(move |_: &()| {
         let current_page = page.get();
-        let current_channel = channel.get();
+        let current_channel = active_channel.get();
         async move {
             set_is_loading.set(true);
             match get_casts_by_channel(current_channel, current_page, limit).await {
@@ -87,7 +89,7 @@ pub fn CastList() -> impl IntoView {
     });
 
     create_effect(move |_| {
-        channel.track();
+        active_channel.track();
         set_cast_list.set(Vec::new());
         set_page.set(1);
         set_has_more.set(true);
@@ -104,9 +106,9 @@ pub fn CastList() -> impl IntoView {
 
     view! {
         <div class="cast-list w-11/12 lg:w-8/12 xl:w-3/12 mx-auto">
-            <h2 class="text-2xl ib text-gray-700 hover:text-gray-900 p-4">
-                <a href={move || format!("https://warpcast.com/~/channel/{}", channel.get())} target="_blank" rel="noopener noreferrer">
-                    {move || format!("/{}", channel.get())}
+            <h2 class="text-2xl ib text-gray-700 hover:text-gray-900 pb-8">
+                <a href={move || format!("https://warpcast.com/~/channel/{}", active_channel.get())} target="_blank" rel="noopener noreferrer">
+                    {move || format!("/{}", active_channel.get())}
                 </a>
             </h2>
             {move || error.get().map(|err| view! { <p class="text-red-500">{err}</p> })}
@@ -117,7 +119,7 @@ pub fn CastList() -> impl IntoView {
                     children=move |cast| {
                         view! {
                             <div class="cast-item bg-teal-800 p-4 shadow hover:bg-teal-900 border-2 border-teal-900 hover:border-teal-800 transition duration-0">
-                                <p class="ib text-md text-pistachio-500">"Author FID: "{cast.data.fid}</p>
+                                <p class="ib text-md text-pistachio-500">"author fid: "{cast.data.fid}</p>
                                 <p class="ir text-md text-pistachio-200">
                                     {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("No text"))}
                                 </p>

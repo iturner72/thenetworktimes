@@ -1,11 +1,16 @@
 use leptos::*;
 
+use crate::components::cast_list::CastList;
+use crate::components::channels::Channels;
+
 #[component]
 pub fn Home() -> impl IntoView {
+    let (channel, set_channel) = create_signal("networktimes".to_string());
+
     view! {
-        <div class="flex flex-col justify-center pt-8">
-            <h1 class="ib text-pistachio-300 text-7xl">"home"</h1>
-            <p class="ib text-salmon-400 text-3xl pt-4">"test"</p>
+        <div class="home-feed-container flex flex-row justify-center pt-2">
+            <Channels set_active_channel=set_channel/>
+            <CastList active_channel=channel/>
         </div>
     }
 }
