@@ -34,10 +34,12 @@ cfg_if! {
         
         pub async fn get_user_data_by_fid(Query(params): Query<UserDataParams>) -> Result<Json<Value>, StatusCode> {
             let hubble_url = env::var("HUBBLE_URL").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-            let mut url = format!("{}:2281/v1/userDataByFid?fid={}", hubble_url, params.fid);
+            let mut url = format!("{}/userDataByFid?fid={}", hubble_url, params.fid);
             if let Some(ref data_type) = params.user_data_type {
                 url.push_str(&format!("&user_data_type={}", data_type));
             }
+
+            info!("Final user data URL: {}", url);
             fetch_and_respond(url).await
         }
         

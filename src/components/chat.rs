@@ -13,7 +13,6 @@ cfg_if! {
 		use axum::response::sse::Event;
 		use tokio::sync::mpsc;
 		use futures::stream::{Stream, StreamExt};
-		use serde::{Deserialize, Serialize};
 		use reqwest::Client;
 		use regex::Regex;
 		use std::pin::Pin;
@@ -32,21 +31,6 @@ cfg_if! {
 			fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
 				self.receiver.poll_recv(cx)
 			}
-		}
-
-		#[derive(Debug, Deserialize, Serialize)]
-		struct ChatCompletionResponse {
-			choices: Vec<Choice>,
-		}
-
-		#[derive(Debug, Deserialize, Serialize)]
-		struct Choice {
-			delta: Delta,
-		}
-
-		#[derive(Debug, Deserialize, Serialize)]
-		struct Delta {
-			content: Option<String>,
 		}
 
 		#[derive(Clone)]

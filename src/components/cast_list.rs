@@ -18,8 +18,8 @@ pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Res
     impl fmt::Display for CastError {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
-                CastError::FetchError(e) => write!(f, "Fetch error: {}", e),
-                CastError::ParseError(e) => write!(f, "Parse error: {}", e),
+                CastError::FetchError(e) => write!(f, "fetch error: {}", e),
+                CastError::ParseError(e) => write!(f, "parse error: {}", e),
             }
         }
     }
@@ -40,15 +40,15 @@ pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Res
         Query(query_params)
     )
     .await
-    .map_err(|e| CastError::FetchError(format!("Failed to fetch casts: {:?}", e)))
+    .map_err(|e| CastError::FetchError(format!("failed to fetch casts: {:?}", e)))
     .map_err(to_server_error)?;
 
     let cast_response: Value = serde_json::from_value(casts_response.0)
-        .map_err(|e| CastError::ParseError(format!("Failed to parse cast response: {:?}", e)))
+        .map_err(|e| CastError::ParseError(format!("failed to parse cast response: {:?}", e)))
         .map_err(to_server_error)?;
 
     let casts: Vec<Cast> = serde_json::from_value(cast_response["messages"].clone())
-        .map_err(|e| CastError::ParseError(format!("Failed to parse casts: {:?}", e)))
+        .map_err(|e| CastError::ParseError(format!("failed to parse casts: {:?}", e)))
         .map_err(to_server_error)?;
 
     Ok(casts)
@@ -58,7 +58,6 @@ pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Res
 pub fn CastList(
     active_channel: ReadSignal<String>
 ) -> impl IntoView {
-//    let (channel, _set_channel) = create_signal("networktimes".to_string());
     let (cast_list, set_cast_list) = create_signal(Vec::new());
     let (page, set_page) = create_signal(1u64);
     let (error, set_error) = create_signal(None::<String>);
@@ -81,7 +80,7 @@ pub fn CastList(
                     set_error.set(None);
                 }
                 Err(e) => {
-                    set_error.set(Some(format!("Failed to fetch casts: {}", e)));
+                    set_error.set(Some(format!("failed to fetch casts: {}", e)));
                 }
             }
             set_is_loading.set(false);
@@ -118,34 +117,20 @@ pub fn CastList(
                     key=|cast| cast.hash.clone()
                     children=move |cast| {
                         view! {
-                            <div class="cast-item bg-teal-800 p-4 shadow hover:bg-teal-900 border-2 border-teal-900 hover:border-teal-800 transition duration-0">
+                            <div class="cast-item flex flex-col items-center justify-between bg-teal-800 p-4 shadow hover:bg-teal-900 border-2 border-teal-900 hover:border-teal-800 transition duration-0">
                                 <p class="ib text-md text-pistachio-500">"author fid: "{cast.data.fid}</p>
                                 <p class="ir text-md text-pistachio-200">
                                     {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("No text"))}
                                 </p>
-                                <div class="flex flex-row justify-between items-end">
-                                    {cast.data.castAddBody.as_ref().map(|body| view! {
-                                        <div class="flex flex-row items-center justify-left space-x-4">
-                                            <p class="ir text-xs text-gray-700">
-                                                {"Mentions: "}{body.mentions.len()}
-                                            </p>
-                                            <p class="ir text-xs text-gray-700">
-                                                {"Embeds: "}{body.embeds.len()}
-                                            </p>
-                                        </div>
-                                    })}
-                                    <div>
-                                        <p class="ir text-xs text-gray-800">
-                                            {"Timestamp: "}{cast.data.timestamp}
-                                        </p>
-                                        <p class="ir text-xs text-gray-800">
-                                            {"Network: "}{&cast.data.network}
-                                        </p>
-                                        <p class="ir text-xs text-gray-800">
-                                            {"Type: "}{&cast.data.cast_type}
-                                        </p>
-                                    </div>
-                                </div>
+                                {cast.data.castAddBody.as_ref().and_then(|body| {
+                                    body.embeds.first().and_then(|embed| embed.url.as_ref().map(|url| {
+                                        view! {
+                                            <div class="h-64 w-64 overflow-hidden">
+                                                <img src={url.clone()} alt="embedded content" class="w-full h-full object-cover" />
+                                            </div>
+                                        }
+                                    }))
+                                })}
                             </div>
                         }
                     }
@@ -154,7 +139,7 @@ pub fn CastList(
             <div>
                 {move || {
                     if is_loading.get() {
-                        view! { <div><p class="text-indigo-300">"Loading..."</p></div> }
+                        view! { <div><p class="text-indigo-300">"loading..."</p></div> }
                     } else if has_more.get() {
                         view! {
                             <div>
@@ -162,12 +147,12 @@ pub fn CastList(
                                     on:click=load_more
                                     class="alumni-sans-regular mt-4 px-4 py-2 bg-stone-700 text-white hover:bg-stone-600"
                                 >
-                                    "Load More"
+                                    "load more"
                                 </button>
                             </div>
                         }
                     } else {
-                        view! { <div><p class="text-indigo-300">"No more casts to load."</p></div> }
+                        view! { <div><p class="text-indigo-300">"no more casts to load."</p></div> }
                     }
                 }}
             </div>
