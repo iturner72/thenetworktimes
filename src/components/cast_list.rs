@@ -139,7 +139,7 @@ pub fn CastList(
             <div>
                 {move || {
                     if is_loading.get() {
-                        view! { <div><p class="text-indigo-300">"loading..."</p></div> }
+                        view! { <div><p class="text-mint-700">"loading..."</p></div> }
                     } else if has_more.get() {
                         view! {
                             <div>

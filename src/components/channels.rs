@@ -1,6 +1,5 @@
 use cfg_if::cfg_if;
 use leptos::*;
-use leptos_router::A;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -80,7 +79,6 @@ fn format_date(timestamp: u64) -> String {
     datetime.format("%B '%y").to_string().to_lowercase()
     
 }
-
 #[component]
 pub fn Channels(
     set_active_channel: WriteSignal<String>
@@ -142,7 +140,6 @@ pub fn Channels(
             }
         }
     });
-
     view! {
         <div class="channels-component-view w-7/12 md:w-3/12 xl:w-2/12 p-2 mx-auto">
             <h1 class="text-2xl ib text-salmon-300 text-center mb-4">"channels"</h1>
@@ -157,7 +154,7 @@ pub fn Channels(
                         let channel_id = channel.id.clone();
                         view! {
                             <button 
-                                class="channel-item bg-teal-800 p-2 shadow hover:bg-teal-900 transition duration-0 group"
+                                class="channel-item bg-teal-800 p-2 shadow hover:bg-teal-900 transition duration-0 group relative"
                                 on:click=move |_| set_active_channel(channel_id.clone())
                             >
                                 <div class="channel-item-info-container flex flex-col items-start">
@@ -175,16 +172,13 @@ pub fn Channels(
                                             }}
                                         </div>
                                     </div>
-                                    <div class="description-v-stack hidden group-hover:flex flex-col items-center justify-center text-center mt-4 w-full">
+                                    <div class="description-v-stack hidden group-hover:flex flex-col items-start justify-center text-left mt-4 w-full absolute top-0 left-full ml-2 z-50 bg-teal-800 p-4 shadow-lg">
                                         <p class="ir text-pistachio-200 text-xs w-full">{&channel.description}</p>
                                         {channel.moderatorFid.map(|fid| view! {
                                             <p class="ib text-sm text-mint-700">{"moderator fid: "}{fid}</p>
                                         })}
                                         <p class="ir text-xs text-salmon-400">{"created: "}{format_date(channel.createdAt)}</p>
                                         <p class="ir text-xs text-mint-500">{"followers: "}{channel.followerCount}</p>
-                                        <A href=format!("/casts/{}", channel.url.replace("https://warpcast.com/~/channel/", "")) class="ib text-salmon-600 hover:text-salmon-700 text-sm mt-2">
-                                            "view casts"
-                                        </A>
                                     </div>
                                 </div>
                             </button>
@@ -195,3 +189,4 @@ pub fn Channels(
         </div>
     }
 }
+//
