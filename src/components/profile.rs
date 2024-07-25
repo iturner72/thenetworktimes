@@ -61,18 +61,33 @@ pub fn Profile() -> impl IntoView {
         move || (249222, 6),
         |(fid, user_data_type)| async move { get_profile(fid, user_data_type).await }
     );
+    
+    let pfp_data = create_resource(
+        move || (249222, 1),
+        |(fid, user_data_type)| async move { get_profile(fid, user_data_type).await }
+    );
 
     view! {
-        <Suspense fallback=|| view! { <div>"Loading..."</div> }>
+        <Suspense fallback=|| view! { <div class="text-3xl text-mint-700">"loading..."</div> }>
             <div>
                 {move || match username_data() {
                     None => view! { <span class="ib text-pistachio-500">"chill"</span> },
                     Some(Ok(user)) => view! {
-                        <span class="ib text-gray-700">{"@"}{user.data.user_data_body.value}</span>
+                        <span class="ib text-7xl text-gray-700">{"@"}{user.data.user_data_body.value}</span>
                     },
                     Some(Err(_)) => view! { <span class="ib text-pistachio-500">"unknown user"</span> },
+                }}
+            </div>
+            <div>
+                {move || match pfp_data() {
+                    None => view! { <img src="favicon.ico" /> },
+                    Some(Ok(user)) => view! {
+                        <img src={user.data.user_data_body.value} alt="pfp" class="profile-pic" />
+                    },
+                    Some(Err(_)) => view! { <img src="favicon.ico" /> },
                 }}
             </div>
         </Suspense>
     }
 }
+
