@@ -117,8 +117,12 @@ pub fn CastList(
                     each=move || cast_list.get()
                     key=|cast| cast.hash.clone()
                     children=move |cast| {
+                        let index = cast_list.with(|list| list.iter().position(|c| c.hash == cast.hash).unwrap_or(0));
                         view! {
-                            <CastEntry cast=cast />
+                            <CastEntry 
+                                cast=cast 
+                                lazy_load_index=Signal::derive(move || index < 8)
+                            />
                         }
                     }
                 />

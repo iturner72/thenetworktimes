@@ -1,5 +1,7 @@
 use leptos::*;
 use crate::models::farcaster::{Cast, UserDataResponse};
+use wasm_bindgen::prelude::*;
+use web_sys::{IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit};
 
 #[server(GetUserData, "/api")]
 pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataResponse, ServerFnError> {
@@ -32,63 +34,94 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
     
         get_user_data_by_fid(Query(params))
             .await
-            .map_err(|e| UserDataError::FetchError(format!("Failed to fetch user data: {:?}", e)))
+            .map_err(|e| UserDataError::FetchError(format!("failed to fetch user data: {:?}", e)))
             .and_then(|json| {
                 serde_json::from_value::<UserDataResponse>(json.0)
-                    .map_err(|e| UserDataError::ParseError(format!("Failed to parse user data: {:?}", e)))
+                    .map_err(|e| UserDataError::ParseError(format!("failed to parse user data: {:?}", e)))
             })
             .map_err(to_server_error)
 }
 
 #[component]
-pub fn CastEntry(cast: Cast) -> impl IntoView {
-    let username_data = create_resource(
-        move || (cast.data.fid, 6), // 6 is the user data type for username
-        |(fid, user_data_type)| async move { get_user_data(fid, user_data_type).await }
-    );
+pub fn CastEntry(
+    cast: Cast,
+    #[prop(into)] lazy_load_index: Signal<bool>,
+) -> impl IntoView {
+    let (user_data, set_user_data) = create_signal(None::<(String, String)>);
+    let (is_visible, set_is_visible) = create_signal(false);
 
-    let pfp_data = create_resource(
-        move || (cast.data.fid, 1), // 1 is the user data type for profile picture
-        |(fid, user_data_type)| async move { get_user_data(fid, user_data_type).await }
-    );
+    let load_user_data = create_action(move |_: &()| {
+        let fid = cast.data.fid;
+        async move {
+            let username = get_user_data(fid, 6).await.ok()
+                .and_then(|response| Some(response.data.user_data_body.value));
+            let pfp = get_user_data(fid, 1).await.ok()
+                .and_then(|response| Some(response.data.user_data_body.value));
+            if let (Some(username), Some(pfp)) = (username, pfp) {
+                set_user_data(Some((username, pfp)));
+            }
+        }
+    });
+
+    create_effect(move |_| {
+        if (lazy_load_index.get() || is_visible.get()) && user_data.get().is_none() {
+            load_user_data.dispatch(());
+        }
+    });
+
+    let element_ref = create_node_ref::<html::Div>();
+
+    create_effect(move |_| {
+        let element = element_ref.get().expect("div to be available");
+
+        let observer_callback = Closure::wrap(Box::new(move |entries: Vec<IntersectionObserverEntry>, _: IntersectionObserver| {
+            if let Some(entry) = entries.get(0) {
+                if entry.is_intersecting() {
+                    set_is_visible.set(true);
+                }
+            }
+        }) as Box<dyn FnMut(Vec<IntersectionObserverEntry>, IntersectionObserver)>);
+
+        let mut options = IntersectionObserverInit::new();
+        options.threshold(&JsValue::from(0.1));
+
+        let observer = IntersectionObserver::new_with_options(
+            observer_callback.as_ref().unchecked_ref(),
+            &options,
+        ).expect("failed to create IntersectionObserver");
+
+        observer.observe(&element);
+
+        on_cleanup(move || {
+            observer.disconnect();
+            drop(observer_callback);
+        });
+    });
 
     view! {
-        <div class="bg-teal-800 p-4 shadow hover:bg-teal-900 transition duration-0">
-            <div class="flex flex-col space-y-2">
-                <div class="flex items-center space-x-2">
-                    {move || match pfp_data() {
-                        None => view! { <div class="w-10 h-10 bg-gray-300 rounded-full"></div> },
-                        Some(Ok(pfp)) => view! {
-                            <div>
-                                <img
-                                    src={pfp.data.user_data_body.value}
-                                    alt="pfp"
-                                    class="w-10 h-10 rounded-full"
-                                />
-                            </div>
-                        },
-                        Some(Err(_)) => view! {
-                            <div>
-                            <img
-                                src={" "}
-                                alt="pfp not found"
-                                class="w-10 h-10 rounded-full"
-                            />
-                            </div>
-                        },
-                    }}
-                    {move || match username_data.get() {
-                        None => view! { <span class="ib text-pistachio-500">"Loading..."</span> },
-                        Some(Ok(user)) => view! {
-                            <span class="ib text-pistachio-500">{"@"}{user.data.user_data_body.value}</span>
-                        },
-                        Some(Err(_)) => view! { <span class="ib text-pistachio-500">"Unknown User"</span> },
-                    }}
-                </div>
-                <p class="ir text-pistachio-200">
-                    {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&"N/A".to_string())}
+        <div class="cast-entry" node_ref=element_ref>
+            {move || {
+                match user_data.get() {
+                    Some((username, pfp)) => view! {
+                        <div class="user-info">
+                            <img src={pfp} alt="Profile" class="w-10 h-10 rounded-full" />
+                            <span class="username ib text-mint-700">{username}</span>
+                        </div>
+                    },
+                    None => view! {
+                        <div class="user-info-placeholder">
+                            <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
+                            <span class="username-placeholder bg-gray-300 w-20 h-4"></span>
+                        </div>
+                    }
+                }
+            }}
+            <div class="cast-content">
+                <p class="ir text-md text-pistachio-200">
+                    {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("no text"))}
                 </p>
             </div>
         </div>
     }
+
 }
