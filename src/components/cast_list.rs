@@ -1,5 +1,6 @@
 use leptos::*;
 use crate::models::farcaster::Cast;
+use crate::components::cast_entry::CastEntry;
 
 #[server(GetCastsByChannel, "/api")]
 pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Result<Vec<Cast>, ServerFnError> {
@@ -63,7 +64,7 @@ pub fn CastList(
     let (error, set_error) = create_signal(None::<String>);
     let (is_loading, set_is_loading) = create_signal(false);
     let (has_more, set_has_more) = create_signal(true);
-    let limit = 40u64;
+    let limit = 4u64;
 
     let fetch_casts = create_action(move |_: &()| {
         let current_page = page.get();
@@ -117,21 +118,7 @@ pub fn CastList(
                     key=|cast| cast.hash.clone()
                     children=move |cast| {
                         view! {
-                            <div class="cast-item flex flex-col items-center justify-between bg-teal-800 p-4 shadow hover:bg-teal-900 border-2 border-teal-900 hover:border-teal-800 transition duration-0">
-                                <p class="ib text-md text-pistachio-500">"author fid: "{cast.data.fid}</p>
-                                <p class="ir text-md text-pistachio-200">
-                                    {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("No text"))}
-                                </p>
-                                {cast.data.castAddBody.as_ref().and_then(|body| {
-                                    body.embeds.first().and_then(|embed| embed.url.as_ref().map(|url| {
-                                        view! {
-                                            <div class="h-64 w-64 overflow-hidden">
-                                                <img src={url.clone()} alt="embedded content" class="w-full h-full object-cover" />
-                                            </div>
-                                        }
-                                    }))
-                                })}
-                            </div>
+                            <CastEntry cast=cast />
                         }
                     }
                 />

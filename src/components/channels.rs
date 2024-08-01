@@ -79,6 +79,7 @@ fn format_date(timestamp: u64) -> String {
     datetime.format("%B '%y").to_string().to_lowercase()
     
 }
+
 #[component]
 pub fn Channels(
     set_active_channel: WriteSignal<String>
@@ -140,6 +141,7 @@ pub fn Channels(
             }
         }
     });
+
     view! {
         <div class="channels-component-view w-7/12 md:w-3/12 xl:w-2/12 p-2 mx-auto">
             <h1 class="text-2xl ib text-salmon-300 text-center mb-4">"channels"</h1>
@@ -172,7 +174,7 @@ pub fn Channels(
                                             }}
                                         </div>
                                     </div>
-                                    <div class="description-v-stack hidden group-hover:flex flex-col items-start justify-center text-left mt-4 w-full absolute top-0 left-full ml-2 z-50 bg-teal-800 p-4 shadow-lg">
+                                    <div class="description-v-stack hidden group-hover:flex flex-col items-start justify-center text-left mt-4 w-full absolute top-0 left-1/2 ml-2 z-50 bg-teal-700 p-4 shadow-lg">
                                         <p class="ir text-pistachio-200 text-xs w-full">{&channel.description}</p>
                                         {channel.moderatorFid.map(|fid| view! {
                                             <p class="ib text-sm text-mint-700">{"moderator fid: "}{fid}</p>
@@ -189,4 +191,3 @@ pub fn Channels(
         </div>
     }
 }
-//
