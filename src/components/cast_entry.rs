@@ -103,7 +103,7 @@ pub fn CastEntry(
             {move || {
                 match user_data.get() {
                     Some((username, pfp)) => view! {
-                        <div class="user-info">
+                        <div class="user-info flex flex-row items-center justify-start space-x-2">
                             <img src={pfp} alt="Profile" class="w-10 h-10 rounded-full" />
                             <span class="username ib text-mint-700">{username}</span>
                         </div>
@@ -116,7 +116,7 @@ pub fn CastEntry(
                     }
                 }
             }}
-            <div class="cast-content">
+            <div class="cast-content flex items-start pl-12">
                 <p class="ir text-md text-pistachio-200">
                     {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("no text"))}
                 </p>

@@ -105,24 +105,28 @@ pub fn CastList(
     };
 
     view! {
-        <div class="cast-list w-11/12 lg:w-8/12 xl:w-3/12 mx-auto">
-            <h2 class="text-2xl ib text-gray-700 hover:text-gray-900 pb-8">
+        <div class="channel-casts-container w-11/12 lg:w-8/12 xl:w-3/12 mx-auto">
+            <h2 class="text-2xl ib text-gray-700 hover:text-gray-900 pb-6">
                 <a href={move || format!("https://warpcast.com/~/channel/{}", active_channel.get())} target="_blank" rel="noopener noreferrer">
                     {move || format!("/{}", active_channel.get())}
                 </a>
             </h2>
             {move || error.get().map(|err| view! { <p class="text-red-500">{err}</p> })}
-            <div class="space-y-4">
+            <div class="cast-list">
                 <For
                     each=move || cast_list.get()
                     key=|cast| cast.hash.clone()
                     children=move |cast| {
                         let index = cast_list.with(|list| list.iter().position(|c| c.hash == cast.hash).unwrap_or(0));
                         view! {
-                            <CastEntry 
-                                cast=cast 
-                                lazy_load_index=Signal::derive(move || index < 8)
-                            />
+                            <div class=move || format!("border-l border-r border-b last:border-b-0 border-seafoam-800 {} p-4 transition-colors duration-0 ease-in-out hover:bg-teal-800",
+                                if index == 0 { "border-t" } else { "" }
+                            )>
+                                <CastEntry 
+                                    cast=cast 
+                                    lazy_load_index=Signal::derive(move || index < 8)
+                                />
+                            </div>
                         }
                     }
                 />
