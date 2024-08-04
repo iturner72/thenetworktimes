@@ -116,12 +116,23 @@ pub fn CastEntry(
                     }
                 }
             }}
-            <div class="cast-content flex items-start pl-12">
+            <div class="cast-content flex flex-col items-start pl-12">
                 <p class="ir text-md text-pistachio-200">
                     {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("no text"))}
                 </p>
+                {move || {
+                    cast.data.castAddBody.as_ref().map(|body| {
+                        body.embeds.iter().filter_map(|embed| {
+                            embed.url.as_ref().map(|url| {
+                                view! {
+                                    <img src={url.clone()} alt="embedded content" class="mt-2 max-w-md object-contain h-auto rounded-lg" />
+                                }
+                            })
+                        }).collect::<Vec<_>>()
+                    })
+                }}
+
             </div>
         </div>
     }
-
 }
