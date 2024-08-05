@@ -43,9 +43,11 @@ pub fn App() -> impl IntoView {
                     <Route path="home" view=Home/>
                     <Route path="threadlist" view=ThreadList/>
                     <Route path="settings" view=Settings/>
-                    <Route path="profile" view=Profile/>
+                    <Route path="profile/:id" view=Profile/>
                 </Routes>
             </main>
         </Router>
     }
 }
+
+

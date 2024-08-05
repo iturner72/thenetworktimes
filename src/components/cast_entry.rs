@@ -104,14 +104,14 @@ pub fn CastEntry(
                 match user_data.get() {
                     Some((username, pfp)) => view! {
                         <div class="user-info flex flex-row items-center justify-start space-x-2">
-                            <img src={pfp} alt="Profile" class="w-10 h-10 rounded-full" />
+                            <img src={pfp} alt="Profile" class="w-12 h-12 rounded-full" />
                             <span class="username ib text-mint-700">{username}</span>
                         </div>
                     },
                     None => view! {
                         <div class="user-info-placeholder">
-                            <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
-                            <span class="username-placeholder bg-gray-300 w-20 h-4"></span>
+                            <div class="w-12 h-12 bg-gray-800 rounded-full"></div>
+                            <span class="username-placeholder bg-gray-800 w-20 h-4"></span>
                         </div>
                     }
                 }
@@ -131,7 +131,6 @@ pub fn CastEntry(
                         }).collect::<Vec<_>>()
                     })
                 }}
-
             </div>
         </div>
     }

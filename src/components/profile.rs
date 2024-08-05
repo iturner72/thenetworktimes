@@ -1,4 +1,5 @@
 use leptos::*;
+use leptos_router::*;
 use crate::models::farcaster::UserDataResponse;
 
 #[server(GetProfile, "/api")]
@@ -57,37 +58,39 @@ pub async fn get_profile(fid: u64, user_data_type: u8) -> Result<UserDataRespons
 
 #[component]
 pub fn Profile() -> impl IntoView {
-    let username_data = create_resource(
-        move || (249222, 6),
-        |(fid, user_data_type)| async move { get_profile(fid, user_data_type).await }
-    );
-    
-    let pfp_data = create_resource(
-        move || (249222, 1),
-        |(fid, user_data_type)| async move { get_profile(fid, user_data_type).await }
+    let params = use_params_map();
+    let fid = create_memo(move |_| {
+        params.with(|params| params.get("id").cloned().unwrap_or_default().parse::<u64>().unwrap_or(0))
+    });
+
+    let user_data: Resource<u64, Result<(UserDataResponse, UserDataResponse), ServerFnError>> = create_resource(
+        move || fid(),
+        |fid| async move {
+            let username = get_profile(fid, 6).await?;
+            let pfp = get_profile(fid, 1).await?;
+            Ok((username, pfp))
+        }
     );
 
     view! {
-        <Suspense fallback=|| view! { <div class="text-3xl text-mint-700">"loading..."</div> }>
-            <div>
-                {move || match username_data() {
-                    None => view! { <span class="ib text-pistachio-500">"chill"</span> },
-                    Some(Ok(user)) => view! {
-                        <span class="ib text-7xl text-gray-700">{"@"}{user.data.user_data_body.value}</span>
-                    },
-                    Some(Err(_)) => view! { <span class="ib text-pistachio-500">"unknown user"</span> },
-                }}
-            </div>
-            <div>
-                {move || match pfp_data() {
-                    None => view! { <img src="favicon.ico" /> },
-                    Some(Ok(user)) => view! {
-                        <img src={user.data.user_data_body.value} alt="pfp" class="profile-pic" />
-                    },
-                    Some(Err(_)) => view! { <img src="favicon.ico" /> },
-                }}
-            </div>
-        </Suspense>
+
+
+    <Suspense fallback=|| view! { <div class="text-3xl text-mint-700">"loading..."</div> }>
+        {move || match user_data.get() {
+            None => view! { <div class="text-pistachio-500">"Loading..."</div> },
+            Some(Ok((username, pfp))) => view! {
+                <div>
+                    <div>
+                        <span class="ib text-7xl text-gray-700">{"@"}{username.data.user_data_body.value}</span>
+                    </div>
+                    <div>
+                        <img src={pfp.data.user_data_body.value} alt="pfp" class="profile-pic" />
+                    </div>
+                </div>
+            },
+            Some(Err(_)) => view! { <div class="text-pistachio-500">"Error loading user data"</div> },
+        }}
+    </Suspense>
+
     }
 }
-
