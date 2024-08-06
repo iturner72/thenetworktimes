@@ -1,4 +1,5 @@
 use leptos::*;
+use leptos_router::A;
 use crate::models::farcaster::{Cast, UserDataResponse};
 use wasm_bindgen::prelude::*;
 use web_sys::{IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit};
@@ -103,9 +104,19 @@ pub fn CastEntry(
             {move || {
                 match user_data.get() {
                     Some((username, pfp)) => view! {
+//                        <div class="user-info flex flex-row items-center justify-start space-x-2">
+//                            <img src={pfp} alt="Profile" class="w-12 h-12 rounded-full" />
+//                            <span class="username ib text-mint-700">{username}</span>
+//                        </div>
+
                         <div class="user-info flex flex-row items-center justify-start space-x-2">
-                            <img src={pfp} alt="Profile" class="w-12 h-12 rounded-full" />
-                            <span class="username ib text-mint-700">{username}</span>
+
+                            <A href=format!("/profile/{}", cast.data.fid)>
+                                <img src={pfp} alt="Profile" class="w-12 h-12 rounded-full cursor-pointer" />
+                            </A>
+                            <A href=format!("/profile/{}", cast.data.fid)>
+                                <span class="username ib text-mint-700">{username}</span>
+                            </A>
                         </div>
                     },
                     None => view! {
