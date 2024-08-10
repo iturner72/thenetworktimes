@@ -5,6 +5,7 @@ cfg_if! {
         use diesel::prelude::*;
         use diesel::PgConnection;
         use deadpool_diesel::{Manager, Pool, Runtime};
+
         use crate::models::conversations::{NewMessage, Thread, Message};
         use crate::schema::{threads, messages};
 

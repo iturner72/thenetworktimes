@@ -4,11 +4,11 @@ use leptos_meta::*;
 use leptos_router::*;
 
 use crate::pages::home::Home;
-use crate::pages::settings::Settings;
-use crate::components::threadlist::ThreadList;
+use crate::pages::hometest::HomeTest;
 use crate::components::navbar::Navbar;
-use crate::components::chat::Chat;
 use crate::components::profile::Profile;
+use crate::pages::settings::Settings;
+use crate::pages::writersroom::WritersRoom;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -39,9 +39,9 @@ pub fn App() -> impl IntoView {
             </nav>
             <main>
                 <Routes>
-                    <Route path="" view=Chat/>
-                    <Route path="home" view=Home/>
-                    <Route path="threadlist" view=ThreadList/>
+                    <Route path="" view=HomeTest/>
+                    <Route path="feed" view=Home/>
+                    <Route path="writersroom" view=WritersRoom/>
                     <Route path="settings" view=Settings/>
                     <Route path="profile/:id" view=Profile/>
                 </Routes>

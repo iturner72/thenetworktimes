@@ -7,7 +7,7 @@ cfg_if! {
             extract::{Query, State},
             http::Request,
             response::IntoResponse,
-            routing::get,
+            routing::{get, post},
             Router,
             response::sse::Sse,
         };
@@ -22,12 +22,12 @@ cfg_if! {
         use thenetworktimes::components::chat::{SseStream, send_message_stream};
         use thenetworktimes::database::db::establish_connection;
         use thenetworktimes::state::AppState;
+        use thenetworktimes::handlers::create_message;
         use thenetworktimes::services::hubble::*;
 
         #[tokio::main]
         async fn main() {
         
-        //    use thenetworktimes::handlers::create_message;
             // this is a sanity check (simple create_message function) which conflicts 
             // with the server function of the same name, so i break my no-comments rule
             // here since it's just so convenient (i should write tests for these things)
@@ -67,7 +67,7 @@ cfg_if! {
                     "/api/*fn_name",
                     get(server_fn_handler).post(server_fn_handler),
                 )
-         //        .route("/api/create_message", post(create_message))
+                .route("/api/create_message", post(create_message))
                 .route("/api/userNameProofsByFid/:fid", get(get_username_proofs_by_fid))
                 .route("/api/userDataByFid", get(get_user_data_by_fid))
                 .route("/api/castById/:fid/:hash", get(get_cast_by_id))
@@ -88,11 +88,12 @@ cfg_if! {
                     handler(request).await.into_response()
                 }))
                 .route("/api/send_message_stream", axum::routing::get(|Query(params): Query<HashMap<String, String>>| async move {
-                    let (tx, rx) = mpsc::channel(100);
-                    if let Some(message) = params.get("message") {
-                        let message = message.clone();
+                    let (tx, rx) = mpsc::channel(1);
+                    if let (Some(thread_id), Some(model)) = (params.get("thread_id"), params.get("model")) {
+                        let thread_id = thread_id.clone();
+                        let model = model.clone();
                         tokio::spawn(async move {
-                            send_message_stream(message, tx).await;
+                            send_message_stream(thread_id, model, tx).await;
                         });
                     }
                     Sse::new(SseStream { receiver: rx })
