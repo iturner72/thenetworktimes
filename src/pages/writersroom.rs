@@ -7,8 +7,8 @@ use crate::components::messagelist::MessageList;
 #[component]
 pub fn WritersRoom() -> impl IntoView {
     let (show_threads, set_show_threads) = create_signal(false);
-    let (model, set_model) = create_signal("claude-3-haiku-20230307".to_string());
-    let (thread_id, set_thread_id) = create_signal("001".to_string());
+    let (model, set_model) = create_signal("claude-3-haiku-20240307".to_string());
+    let (thread_id, set_thread_id) = create_signal("002".to_string());
 
     view! {
         <div class="w-full flex flex-col justify-start pt-2 pl-2 pr-2 h-full">
