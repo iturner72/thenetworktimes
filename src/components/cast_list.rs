@@ -2,59 +2,6 @@ use leptos::*;
 use crate::models::farcaster::Cast;
 use crate::components::cast_entry::CastEntry;
 
-#[server(GetCastsByChannel, "/api")]
-pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Result<Vec<Cast>, ServerFnError> {
-    use axum::extract::{Query, Path};
-    use serde_json::Value;
-    use std::collections::HashMap;
-    use crate::services::hubble::get_casts_by_parent;
-    use std::fmt;
-
-    #[derive(Debug)]
-    enum CastError {
-        FetchError(String),
-        ParseError(String),
-    }
-
-    impl fmt::Display for CastError {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match self {
-                CastError::FetchError(e) => write!(f, "fetch error: {}", e),
-                CastError::ParseError(e) => write!(f, "parse error: {}", e),
-            }
-        }
-    }
-    
-    fn to_server_error(e: CastError) -> ServerFnError {
-        ServerFnError::ServerError(e.to_string())
-    }
-
-    let mut query_params = HashMap::new();
-    query_params.insert("page".to_string(), page);
-    query_params.insert("limit".to_string(), limit);
-
-    let channel_url = format!("https://warpcast.com/~/channel/{}", channel);
-    let encoded_channel_url = urlencoding::encode(&channel_url);
-
-    let casts_response = get_casts_by_parent(
-        Path(encoded_channel_url.to_string()),
-        Query(query_params)
-    )
-    .await
-    .map_err(|e| CastError::FetchError(format!("failed to fetch casts: {:?}", e)))
-    .map_err(to_server_error)?;
-
-    let cast_response: Value = serde_json::from_value(casts_response.0)
-        .map_err(|e| CastError::ParseError(format!("failed to parse cast response: {:?}", e)))
-        .map_err(to_server_error)?;
-
-    let casts: Vec<Cast> = serde_json::from_value(cast_response["messages"].clone())
-        .map_err(|e| CastError::ParseError(format!("failed to parse casts: {:?}", e)))
-        .map_err(to_server_error)?;
-
-    Ok(casts)
-}
-
 #[component]
 pub fn CastList(
     active_channel: ReadSignal<String>
@@ -154,3 +101,57 @@ pub fn CastList(
         </div>
     }
 }
+
+#[server(GetCastsByChannel, "/api")]
+pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Result<Vec<Cast>, ServerFnError> {
+    use axum::extract::{Query, Path};
+    use serde_json::Value;
+    use std::collections::HashMap;
+    use crate::services::hubble::get_casts_by_parent;
+    use std::fmt;
+
+    #[derive(Debug)]
+    enum CastError {
+        FetchError(String),
+        ParseError(String),
+    }
+
+    impl fmt::Display for CastError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                CastError::FetchError(e) => write!(f, "fetch error: {}", e),
+                CastError::ParseError(e) => write!(f, "parse error: {}", e),
+            }
+        }
+    }
+    
+    fn to_server_error(e: CastError) -> ServerFnError {
+        ServerFnError::ServerError(e.to_string())
+    }
+
+    let mut query_params = HashMap::new();
+    query_params.insert("page".to_string(), page);
+    query_params.insert("limit".to_string(), limit);
+
+    let channel_url = format!("https://warpcast.com/~/channel/{}", channel);
+    let encoded_channel_url = urlencoding::encode(&channel_url);
+
+    let casts_response = get_casts_by_parent(
+        Path(encoded_channel_url.to_string()),
+        Query(query_params)
+    )
+    .await
+    .map_err(|e| CastError::FetchError(format!("failed to fetch casts: {:?}", e)))
+    .map_err(to_server_error)?;
+
+    let cast_response: Value = serde_json::from_value(casts_response.0)
+        .map_err(|e| CastError::ParseError(format!("failed to parse cast response: {:?}", e)))
+        .map_err(to_server_error)?;
+
+    let casts: Vec<Cast> = serde_json::from_value(cast_response["messages"].clone())
+        .map_err(|e| CastError::ParseError(format!("failed to parse casts: {:?}", e)))
+        .map_err(to_server_error)?;
+
+    Ok(casts)
+}
+

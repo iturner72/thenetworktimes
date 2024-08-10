@@ -4,45 +4,6 @@ use crate::models::farcaster::{Cast, UserDataResponse};
 use wasm_bindgen::prelude::*;
 use web_sys::{IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit};
 
-#[server(GetUserData, "/api")]
-pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataResponse, ServerFnError> {
-    use crate::services::hubble::{UserDataParams, get_user_data_by_fid};
-    use axum::extract::Query;
-    use std::fmt;
-
-    #[derive(Debug)]
-    enum UserDataError {
-        FetchError(String),
-        ParseError(String),
-    }
-    
-    impl fmt::Display for UserDataError {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match self {
-                UserDataError::FetchError(e) => write!(f, "Fetch error: {}", e),
-                UserDataError::ParseError(e) => write!(f, "Parse error: {}", e),
-            }
-        }
-    }
-    
-    fn to_server_error(e: UserDataError) -> ServerFnError {
-        ServerFnError::ServerError(e.to_string())
-    }
-        let params = UserDataParams {
-            fid,
-            user_data_type: Some(user_data_type.to_string()),
-        };
-    
-        get_user_data_by_fid(Query(params))
-            .await
-            .map_err(|e| UserDataError::FetchError(format!("failed to fetch user data: {:?}", e)))
-            .and_then(|json| {
-                serde_json::from_value::<UserDataResponse>(json.0)
-                    .map_err(|e| UserDataError::ParseError(format!("failed to parse user data: {:?}", e)))
-            })
-            .map_err(to_server_error)
-}
-
 #[component]
 pub fn CastEntry(
     cast: Cast,
@@ -50,6 +11,7 @@ pub fn CastEntry(
 ) -> impl IntoView {
     let (user_data, set_user_data) = create_signal(None::<(String, String)>);
     let (is_visible, set_is_visible) = create_signal(false);
+    let (cast_add_body, _set_cast_add_body) = create_signal(cast.data.castAddBody.clone());
 
     let load_user_data = create_action(move |_: &()| {
         let fid = cast.data.fid;
@@ -99,16 +61,21 @@ pub fn CastEntry(
         });
     });
 
+    let processed_content = create_resource(
+        move || cast_add_body.get().and_then(|body| body.text.clone()),
+        |text| async move {
+            match text {
+                Some(content) => process_cast_content(content).await.unwrap_or_default(),
+                None => vec!["no text".to_string()],
+            }
+        }
+    );
+
     view! {
         <div class="cast-entry" node_ref=element_ref>
             {move || {
                 match user_data.get() {
                     Some((username, pfp)) => view! {
-//                        <div class="user-info flex flex-row items-center justify-start space-x-2">
-//                            <img src={pfp} alt="Profile" class="w-12 h-12 rounded-full" />
-//                            <span class="username ib text-mint-700">{username}</span>
-//                        </div>
-
                         <div class="user-info flex flex-row items-center justify-start space-x-2">
 
                             <A href=format!("/profile/{}", cast.data.fid)>
@@ -121,18 +88,30 @@ pub fn CastEntry(
                     },
                     None => view! {
                         <div class="user-info-placeholder">
-                            <div class="w-12 h-12 bg-gray-800 rounded-full"></div>
-                            <span class="username-placeholder bg-gray-800 w-20 h-4"></span>
+                            <div class="w-12 h-12 bg-aqua-800 rounded-full"></div>
+                            <span class="username-placeholder bg-aqua-800 w-20 h-4"></span>
                         </div>
                     }
                 }
             }}
             <div class="cast-content flex flex-col items-start pl-12">
                 <p class="ir text-md text-pistachio-200">
-                    {cast.data.castAddBody.as_ref().and_then(|body| body.text.as_ref()).unwrap_or(&String::from("no text"))}
+                    {move || processed_content.get().map(|parts| {
+                        parts.into_iter().map(|part| {
+                            if part.starts_with("http") {
+                                view! {
+                                    <a href={part.clone()} target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline">
+                                        {part}
+                                    </a>
+                                }.into_view()
+                            } else {
+                                view! { <span>{part}</span> }.into_view()
+                            }
+                        }).collect::<Vec<_>>()
+                    })}
                 </p>
                 {move || {
-                    cast.data.castAddBody.as_ref().map(|body| {
+                    cast_add_body().as_ref().map(|body| {
                         body.embeds.iter().filter_map(|embed| {
                             embed.url.as_ref().map(|url| {
                                 view! {
@@ -145,4 +124,69 @@ pub fn CastEntry(
             </div>
         </div>
     }
+}
+
+#[server(ProcessCastContent, "/api")]
+pub async fn process_cast_content(content:String) -> Result<Vec<String>, ServerFnError> {
+    use regex::Regex;
+    /*
+     * apparently intersperse_with is feature gated and there's an open issue (i do not care), so i
+     * needed to add the feature flag thing to my lib file to parse the content on the server. i
+     * refuse to use the regex crate on the client! my wasm binary will still be large af i reckon,
+     * oh well.
+    */
+    let url_regex = Regex::new(r"https?://\S+").unwrap();
+    let parts: Vec<String> = url_regex.split(&content)
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>()
+        .into_iter()
+        .intersperse_with(|| {
+            url_regex.find(&content)
+                .map(|m| m.as_str().to_string())
+                .unwrap_or_default()
+        })
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    Ok(parts)
+}
+
+#[server(GetUserData, "/api")]
+pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataResponse, ServerFnError> {
+    use crate::services::hubble::{UserDataParams, get_user_data_by_fid};
+    use axum::extract::Query;
+    use std::fmt;
+
+    #[derive(Debug)]
+    enum UserDataError {
+        FetchError(String),
+        ParseError(String),
+    }
+    
+    impl fmt::Display for UserDataError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                UserDataError::FetchError(e) => write!(f, "Fetch error: {}", e),
+                UserDataError::ParseError(e) => write!(f, "Parse error: {}", e),
+            }
+        }
+    }
+    
+    fn to_server_error(e: UserDataError) -> ServerFnError {
+        ServerFnError::ServerError(e.to_string())
+    }
+
+    let params = UserDataParams {
+        fid,
+        user_data_type: Some(user_data_type.to_string()),
+    };
+
+    get_user_data_by_fid(Query(params))
+        .await
+        .map_err(|e| UserDataError::FetchError(format!("failed to fetch user data: {:?}", e)))
+        .and_then(|json| {
+            serde_json::from_value::<UserDataResponse>(json.0)
+                .map_err(|e| UserDataError::ParseError(format!("failed to parse user data: {:?}", e)))
+        })
+        .map_err(to_server_error)
 }
