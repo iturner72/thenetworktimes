@@ -1,3 +1,4 @@
+#![feature(iter_intersperse)]
 use cfg_if::cfg_if;
 pub mod error_template;
 pub mod fileserv;
