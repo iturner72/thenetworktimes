@@ -52,7 +52,7 @@ pub fn CastList(
     };
 
     view! {
-        <div class="channel-casts-container w-11/12 lg:w-8/12 xl:w-3/12 mx-auto">
+        <div class="channel-casts-container w-11/12 lg:w-8/12 xl:w-5/12 mx-auto">
             <h2 class="text-2xl ib text-gray-700 hover:text-gray-900 pb-6">
                 <a href={move || format!("https://warpcast.com/~/channel/{}", active_channel.get())} target="_blank" rel="noopener noreferrer">
                     {move || format!("/{}", active_channel.get())}

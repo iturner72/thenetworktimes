@@ -131,7 +131,7 @@ pub fn CastEntry(
                                     <img
                                         src={url.clone()}
                                         alt="Cast image"
-                                        class="mt-2 max-w-full h-auto rounded-lg cursor-pointer"
+                                        class="mt-2 max-w-sm h-auto rounded-lg cursor-pointer"
                                         on:click=move |_| open_modal(url_clone.clone())
                                     />
                                 }
@@ -145,10 +145,10 @@ pub fn CastEntry(
                 if show_modal.get() {
                     view! {
                         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div class="bg-white p-4 rounded-lg max-w-3xl max-h-3xl">
+                            <div class="bg-gray-800 p-4 rounded-lg max-w-auto max-h-screen overflow-auto">
                                 <ImageView url={modal_image_url.get().unwrap_or_default()} />
                                 <button
-                                    class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    class="mt-4 px-4 py-2 bg-aqua-800 text-gray-500 hover:bg-gray-300"
                                     on:click=close_modal
                                 >
                                     "Close"
@@ -167,7 +167,7 @@ pub fn CastEntry(
 #[component]
 fn ImageView(#[prop(into)] url: String) -> impl IntoView {
     view! {
-        <img src={url} alt="Cast image" class="mt-2 max-w-full h-auto rounded-lg" />
+        <img src={url} alt="Cast image" class="mt-2 max-w-lg max-h-screen object-contian rounded-lg" />
     }
 }
 
