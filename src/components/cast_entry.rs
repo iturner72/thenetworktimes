@@ -12,6 +12,8 @@ pub fn CastEntry(
     let (user_data, set_user_data) = create_signal(None::<(String, String)>);
     let (is_visible, set_is_visible) = create_signal(false);
     let (cast_add_body, _set_cast_add_body) = create_signal(cast.data.castAddBody.clone());
+    let (show_modal, set_show_modal) = create_signal(false);
+    let (modal_image_url, set_modal_image_url) = create_signal(None::<String>);
 
     let load_user_data = create_action(move |_: &()| {
         let fid = cast.data.fid;
@@ -71,6 +73,15 @@ pub fn CastEntry(
         }
     );
 
+    let open_modal = move |url: String| {
+        set_modal_image_url(Some(url));
+        set_show_modal(true);
+    };
+
+    let close_modal = move |_| {
+        set_show_modal(false);
+    };
+
     view! {
         <div class="cast-entry" node_ref=element_ref>
             {move || {
@@ -110,19 +121,53 @@ pub fn CastEntry(
                         }).collect::<Vec<_>>()
                     })}
                 </p>
+
                 {move || {
-                    cast_add_body().as_ref().map(|body| {
-                        body.embeds.iter().filter_map(|embed| {
+                    cast_add_body.get().and_then(|body| {
+                        Some(body.embeds.iter().filter_map(|embed| {
                             embed.url.as_ref().map(|url| {
+                                let url_clone = url.clone();
                                 view! {
-                                    <img src={url.clone()} alt="embedded content" class="mt-2 max-w-md object-contain h-auto rounded-lg" />
+                                    <img
+                                        src={url.clone()}
+                                        alt="Cast image"
+                                        class="mt-2 max-w-full h-auto rounded-lg cursor-pointer"
+                                        on:click=move |_| open_modal(url_clone.clone())
+                                    />
                                 }
                             })
-                        }).collect::<Vec<_>>()
+                        }).collect::<Vec<_>>())
                     })
                 }}
             </div>
+
+            {move || {
+                if show_modal.get() {
+                    view! {
+                        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                            <div class="bg-white p-4 rounded-lg max-w-3xl max-h-3xl">
+                                <ImageView url={modal_image_url.get().unwrap_or_default()} />
+                                <button
+                                    class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    on:click=close_modal
+                                >
+                                    "Close"
+                                </button>
+                            </div>
+                        </div>
+                    }
+                } else {
+                    view! { <div></div> }
+                }
+            }}
         </div>
+    }
+}
+
+#[component]
+fn ImageView(#[prop(into)] url: String) -> impl IntoView {
+    view! {
+        <img src={url} alt="Cast image" class="mt-2 max-w-full h-auto rounded-lg" />
     }
 }
 
