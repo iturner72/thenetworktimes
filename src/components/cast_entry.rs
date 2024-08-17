@@ -199,11 +199,19 @@ pub async fn process_cast_content(content:String) -> Result<Vec<String>, ServerF
 #[server(GetUserData, "/api")]
 pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataResponse, ServerFnError> {
     use crate::services::hubble::{UserDataParams, get_user_data_by_fid};
-    use axum::extract::Query;
+    use crate::services::redis::{get_user_data_from_cache, set_user_data_to_cache};
+    use crate::state::AppState;
+    use axum::extract::{Query, FromRef};
     use std::fmt;
+    use redis::aio::Connection;
+    use std::pin::Pin;
+    use futures::io::AsyncRead;
 
     #[derive(Debug)]
     enum UserDataError {
+        RedisConnectionError(String),
+        CacheReadError(String),
+        CacheWriteError(String),
         FetchError(String),
         ParseError(String),
     }
@@ -211,8 +219,11 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
     impl fmt::Display for UserDataError {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
-                UserDataError::FetchError(e) => write!(f, "Fetch error: {}", e),
-                UserDataError::ParseError(e) => write!(f, "Parse error: {}", e),
+                UserDataError::RedisConnectionError(e) => write!(f, "redis connections error: {}", e),
+                UserDataError::CacheReadError(e) => write!(f, "cache read error: {}", e),
+                UserDataError::CacheWriteError(e) => write!(f, "cache write error: {}", e),
+                UserDataError::FetchError(e) => write!(f, "fetch error: {}", e),
+                UserDataError::ParseError(e) => write!(f, "parse error: {}", e),
             }
         }
     }
@@ -221,17 +232,33 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
         ServerFnError::ServerError(e.to_string())
     }
 
+    let app_state = use_context::<AppState>().expect("Failed to get AppState from context");
+    let mut redis_conn = &mut app_state.redis_pool;
+
+    if let Some(cached_data) = get_user_data_from_cache(redis_conn, fid).await
+        .map_err(|e| UserDataError::CacheReadError(e.to_string()))
+        .map_err(to_server_error)?
+    {
+        return Ok(cached_data);
+    }
+
     let params = UserDataParams {
         fid,
         user_data_type: Some(user_data_type.to_string()),
     };
 
-    get_user_data_by_fid(Query(params))
-        .await
-        .map_err(|e| UserDataError::FetchError(format!("failed to fetch user data: {:?}", e)))
-        .and_then(|json| {
-            serde_json::from_value::<UserDataResponse>(json.0)
-                .map_err(|e| UserDataError::ParseError(format!("failed to parse user data: {:?}", e)))
-        })
-        .map_err(to_server_error)
+    match get_user_data_by_fid(Query(params)).await {
+        Ok(json) => {
+            let user_data: UserDataResponse = serde_json::from_value(json.0)
+                .map_err(|e| UserDataError::ParseError(e.to_string()))
+                .map_err(to_server_error)?;
+
+            set_user_data_to_cache(&mut redis_conn, fid, &user_data).await
+                .map_err(|e| UserDataError::CacheWriteError(e.to_string()))
+                .map_err(to_server_error)?;
+
+            Ok(user_data)
+        }
+        Err(e) => Err(UserDataError::FetchError(e.to_string())).map_err(to_server_error),
+    }
 }

@@ -29,6 +29,7 @@ leptos_meta = { version = "0.6", features = ["nightly"] }
 leptos_router = { version = "0.6", features = ["nightly"] }
 log = { version = "0.4", optional = false }
 pin-project = "1.1.5"
+redis = { version = "0.26.1", optional = true, features = ["aio", "tokio-comp"] }
 regex = { version = "1.10.4", optional = true }
 reqwest = { version = "0.11", features = ["json", "stream"] }
 serde = { version = "1.0.197", optional = false, features = ["derive"] }
@@ -55,6 +56,7 @@ ssr = [
     "dep:eventsource-stream",
     "dep:futures",
     "dep:futures-util",
+    "dep:redis",
     "dep:regex",
     "dep:tokio",
     "dep:tower",
@@ -67,7 +69,7 @@ ssr = [
 ]
 
 [package.metadata.cargo-all-features]
-denylist = ["axum", "deadpool-diesel", "diesel", "eventsource-stream", "futures", "futures-util", "regex", "tokio", "tower", "tower-http", "leptos_axum"]
+denylist = ["axum", "deadpool-diesel", "diesel", "eventsource-stream", "futures", "futures-util", "redis", "regex", "tokio", "tower", "tower-http", "leptos_axum"]
 skip_feature_sets = [["ssr", "hydrate"]]
 
 [profile.release]

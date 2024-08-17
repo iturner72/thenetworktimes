@@ -16,6 +16,8 @@ cfg_if! {
         use leptos::*;
         use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
         use tokio::sync::mpsc;
+        use redis::Client as RedisClient; 
+        use redis::aio::MultiplexedConnection;
         use std::collections::HashMap;
         use thenetworktimes::app::*;
         use thenetworktimes::fileserv::file_and_error_handler;
@@ -42,10 +44,15 @@ cfg_if! {
         
             let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
             let pool = establish_connection(&database_url);
+
+            let redis_url = std::env::var("REDIS_URL").expect("REDIS_URL must be set");
+            let redis_client = RedisClient::open(redis_url).expect("failed to create Redis client");
+            let redis_pool = redis_client.get_async_connection().await.expect("failed to create redis connection pool");
         
             let app_state = AppState {
                 leptos_options: leptos_options.clone(),
                 pool: pool.clone(),
+                redis_pool: MultiplexedConnection;
             };
         
         
