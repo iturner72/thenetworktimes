@@ -111,21 +111,27 @@ pub fn CastEntry(
                 }
             }}
             <div class="cast-content flex flex-col items-start pl-12">
-                <p class="ir text-md text-pistachio-200">
-                    {move || processed_content.get().map(|parts| {
-                        parts.into_iter().map(|part| {
-                            if part.starts_with("http") {
-                                view! {
-                                    <a href={part.clone()} target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline">
-                                        {part}
-                                    </a>
-                                }.into_view()
-                            } else {
-                                view! { <span>{part}</span> }.into_view()
+                <Suspense fallback=move || view! { <p>"Loading..."</p> }>
+                    {move || {
+                        processed_content.get().map(|parts| {
+                            view! {
+                                <p class="ir text-md text-pistachio-200">
+                                    {parts.into_iter().map(|part| {
+                                        if part.starts_with("http") {
+                                            view! {
+                                                <a href={part.clone()} target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline">
+                                                    {part}
+                                                </a>
+                                            }.into_view()
+                                        } else {
+                                            view! { <span>{part}</span> }.into_view()
+                                        }
+                                    }).collect::<Vec<_>>()}
+                                </p>
                             }
-                        }).collect::<Vec<_>>()
-                    })}
-                </p>
+                        })
+                    }}
+                </Suspense>
 
                 {move || {
                     cast_add_body.get().and_then(|body| {
