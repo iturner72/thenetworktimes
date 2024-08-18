@@ -22,8 +22,13 @@ pub fn CastEntry(
                 .and_then(|response| Some(response.data.user_data_body.value));
             let pfp = get_user_data(fid, 1).await.ok()
                 .and_then(|response| Some(response.data.user_data_body.value));
+
+            log::debug!("username: {:?}, pfp: {:?}", username, pfp);
+
             if let (Some(username), Some(pfp)) = (username, pfp) {
                 set_user_data(Some((username, pfp)));
+            } else {
+                log::warn!("failed to fetch user data for fid: {}", fid);
             }
         }
     });
@@ -90,7 +95,7 @@ pub fn CastEntry(
                         <div class="user-info flex flex-row items-center justify-start space-x-2">
 
                             <A href=format!("/profile/{}", cast.data.fid)>
-                                <img src={pfp} alt="Profile" class="w-12 h-12 rounded-full cursor-pointer" />
+                                <img src={pfp} alt="profile" class="w-12 h-12 rounded-full cursor-pointer" />
                             </A>
                             <A href=format!("/profile/{}", cast.data.fid)>
                                 <span class="username ib text-mint-700">{username}</span>
@@ -130,7 +135,7 @@ pub fn CastEntry(
                                 view! {
                                     <img
                                         src={url.clone()}
-                                        alt="Cast image"
+                                        alt="cast image"
                                         class="mt-2 max-w-sm h-auto rounded-lg cursor-pointer"
                                         on:click=move |_| open_modal(url_clone.clone())
                                     />
@@ -203,6 +208,7 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
     use crate::state::AppState;
     use axum::extract::Query;
     use std::fmt;
+    use log::{debug, info, warn};
 
     #[derive(Debug)]
     enum UserDataError {
@@ -227,14 +233,24 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
         ServerFnError::ServerError(e.to_string())
     }
 
+    debug!("get_user_data called with fid: {}, user_data_type: {}", fid, user_data_type);
+
     let app_state = use_context::<AppState>().expect("Failed to get AppState from context");
     let mut redis_conn = app_state.redis_pool.clone();
 
-    if let Some(cached_data) = get_user_data_from_cache(&mut redis_conn, fid).await
-        .map_err(|e| UserDataError::CacheReadError(e.to_string()))
-        .map_err(to_server_error)?
-    {
-        return Ok(cached_data);
+    // Check cache
+    match get_user_data_from_cache(&mut redis_conn, fid).await {
+        Ok(Some(cached_data)) => {
+            info!("cache hit for fid: {}", fid);
+            return Ok(cached_data);
+        }
+        Ok(None) => {
+            debug!("cache miss for fid: {}", fid);
+        }
+        Err(e) => {
+            warn!("error reading from cache for fid {}: {}", fid, e);
+            return Err(UserDataError::CacheReadError(e.to_string())).map_err(to_server_error);
+        }
     }
 
     let params = UserDataParams {
@@ -244,16 +260,27 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
 
     match get_user_data_by_fid(Query(params)).await {
         Ok(json) => {
-            let user_data: UserDataResponse = serde_json::from_value(json.0)
-                .map_err(|e| UserDataError::ParseError(e.to_string()))
-                .map_err(to_server_error)?;
-
-            set_user_data_to_cache(&mut redis_conn, fid, &user_data).await
-                .map_err(|e| UserDataError::CacheWriteError(e.to_string()))
-                .map_err(to_server_error)?;
-
-            Ok(user_data)
+            debug!("successfully fetched user data for fid: {}", fid);
+            match serde_json::from_value::<UserDataResponse>(json.0) {
+                Ok(user_data) => {
+                    // Update cache
+                    if let Err(e) = set_user_data_to_cache(&mut redis_conn, fid, &user_data).await {
+                        warn!("failed to update cache for fid {}: {}", fid, e);
+                        return Err(UserDataError::CacheWriteError(e.to_string())).map_err(to_server_error);
+                    }
+                    debug!("Successfully updated cache for fid: {}", fid);
+                    Ok(user_data)
+                }
+                Err(e) => {
+                    warn!("failed to parse user data for fid {}: {}", fid, e);
+                    Err(UserDataError::ParseError(e.to_string())).map_err(to_server_error)
+                }
+            }
         }
-        Err(e) => Err(UserDataError::FetchError(e.to_string())).map_err(to_server_error),
+        Err(e) => {
+            warn!("failed to fetch user data for fid {}: {}", fid, e);
+            Err(UserDataError::FetchError(e.to_string())).map_err(to_server_error)
+        }
     }
+
 }
