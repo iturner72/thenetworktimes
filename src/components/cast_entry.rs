@@ -238,17 +238,19 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
     let app_state = use_context::<AppState>().expect("Failed to get AppState from context");
     let mut redis_conn = app_state.redis_pool.clone();
 
+    let cache_key = format!("user_data:{}:{}", fid, user_data_type);
+
     // Check cache
-    match get_user_data_from_cache(&mut redis_conn, fid).await {
+    match get_user_data_from_cache(&mut redis_conn, &cache_key).await {
         Ok(Some(cached_data)) => {
-            info!("cache hit for fid: {}", fid);
+            info!("cache hit for fid: {}, type: {}", fid, user_data_type);
             return Ok(cached_data);
         }
         Ok(None) => {
-            debug!("cache miss for fid: {}", fid);
+            debug!("cache miss for fid: {}, type: {}", fid, user_data_type);
         }
         Err(e) => {
-            warn!("error reading from cache for fid {}: {}", fid, e);
+            warn!("error reading from cache for fid {}, type {}: {}", fid, user_data_type, e);
             return Err(UserDataError::CacheReadError(e.to_string())).map_err(to_server_error);
         }
     }
@@ -260,25 +262,25 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
 
     match get_user_data_by_fid(Query(params)).await {
         Ok(json) => {
-            debug!("successfully fetched user data for fid: {}", fid);
+            debug!("successfully fetched user data for fid: {}, type: {}", fid, user_data_type);
             match serde_json::from_value::<UserDataResponse>(json.0) {
                 Ok(user_data) => {
                     // Update cache
-                    if let Err(e) = set_user_data_to_cache(&mut redis_conn, fid, &user_data).await {
-                        warn!("failed to update cache for fid {}: {}", fid, e);
+                    if let Err(e) = set_user_data_to_cache(&mut redis_conn, &cache_key, &user_data).await {
+                        warn!("failed to update cache for fid {}, type {}: {}", fid, user_data_type, e);
                         return Err(UserDataError::CacheWriteError(e.to_string())).map_err(to_server_error);
                     }
-                    debug!("Successfully updated cache for fid: {}", fid);
+                    debug!("successfully updated cache for fid: {}, type: {}", fid, user_data_type);
                     Ok(user_data)
                 }
                 Err(e) => {
-                    warn!("failed to parse user data for fid {}: {}", fid, e);
+                    warn!("failed to parse user data for fid {}, type {}: {}", fid, user_data_type, e);
                     Err(UserDataError::ParseError(e.to_string())).map_err(to_server_error)
                 }
             }
         }
         Err(e) => {
-            warn!("failed to fetch user data for fid {}: {}", fid, e);
+            warn!("failed to fetch user data for fid {}, type {}: {}", fid, user_data_type, e);
             Err(UserDataError::FetchError(e.to_string())).map_err(to_server_error)
         }
     }
