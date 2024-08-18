@@ -201,15 +201,11 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
     use crate::services::hubble::{UserDataParams, get_user_data_by_fid};
     use crate::services::redis::{get_user_data_from_cache, set_user_data_to_cache};
     use crate::state::AppState;
-    use axum::extract::{Query, FromRef};
+    use axum::extract::Query;
     use std::fmt;
-    use redis::aio::Connection;
-    use std::pin::Pin;
-    use futures::io::AsyncRead;
 
     #[derive(Debug)]
     enum UserDataError {
-        RedisConnectionError(String),
         CacheReadError(String),
         CacheWriteError(String),
         FetchError(String),
@@ -219,7 +215,6 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
     impl fmt::Display for UserDataError {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
-                UserDataError::RedisConnectionError(e) => write!(f, "redis connections error: {}", e),
                 UserDataError::CacheReadError(e) => write!(f, "cache read error: {}", e),
                 UserDataError::CacheWriteError(e) => write!(f, "cache write error: {}", e),
                 UserDataError::FetchError(e) => write!(f, "fetch error: {}", e),
@@ -233,9 +228,9 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
     }
 
     let app_state = use_context::<AppState>().expect("Failed to get AppState from context");
-    let mut redis_conn = &mut app_state.redis_pool;
+    let mut redis_conn = app_state.redis_pool.clone();
 
-    if let Some(cached_data) = get_user_data_from_cache(redis_conn, fid).await
+    if let Some(cached_data) = get_user_data_from_cache(&mut redis_conn, fid).await
         .map_err(|e| UserDataError::CacheReadError(e.to_string()))
         .map_err(to_server_error)?
     {
