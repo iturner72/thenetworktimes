@@ -111,7 +111,7 @@ pub fn CastEntry(
                 }
             }}
             <div class="cast-content flex flex-col items-start pl-12">
-                <Suspense fallback=move || view! { <p>"Loading..."</p> }>
+                <Suspense fallback=move || view! { <p class="pt-2 ib text-mint-700">"loading..."</p> }>
                     {move || {
                         processed_content.get().map(|parts| {
                             view! {

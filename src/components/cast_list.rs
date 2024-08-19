@@ -71,7 +71,7 @@ pub fn CastList(
                             )>
                                 <CastEntry 
                                     cast=cast 
-                                    lazy_load_index=Signal::derive(move || index < 8)
+                                    lazy_load_index=Signal::derive(move || index < 22)
                                 />
                             </div>
                         }
