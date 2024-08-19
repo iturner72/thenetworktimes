@@ -22,16 +22,20 @@ pub fn CastEntry(
         let client_cache = client_cache.get();
         async move {
             if let Some(cached_data) = client_cache.get(fid) {
+                log::debug!("using client cached data for fid: {}", fid);
                 set_user_data(Some(cached_data));
             } else {
+                log::debug!("fetching user data from server for fid: {}", fid);
                 let username = get_user_data(fid, 6).await.ok()
                     .and_then(|response| Some(response.data.user_data_body.value));
                 let pfp = get_user_data(fid, 1).await.ok()
                     .and_then(|response| Some(response.data.user_data_body.value));
     
-                log::debug!("username: {:?}, pfp: {:?}", username, pfp);
+                log::debug!("fetched data for fid {}: username: {:?}, pfp: {:?}", fid, username, pfp);
     
                 if let (Some(username), Some(pfp)) = (username, pfp) {
+                    log::info!("updating client cache and user data for fid: {}", fid);
+                    client_cache.set(fid, username.clone(), pfp.clone());
                     set_user_data(Some((username, pfp)));
                 } else {
                     log::warn!("failed to fetch user data for fid: {}", fid);
