@@ -2435,6 +2435,7 @@ dependencies = [
  "gloo-net 0.2.6",
  "http 1.1.0",
  "http-body 1.0.0",
+ "js-sys",
  "leptos",
  "leptos_axum",
  "leptos_meta",

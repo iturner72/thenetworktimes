@@ -1,6 +1,7 @@
 use leptos::*;
 use leptos_router::A;
 use crate::models::farcaster::{Cast, UserDataResponse};
+use crate::components::cache_provider::ClientCache;
 use wasm_bindgen::prelude::*;
 use web_sys::{IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit};
 

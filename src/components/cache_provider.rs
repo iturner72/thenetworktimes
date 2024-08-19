@@ -9,7 +9,7 @@ struct CachedUserData {
 }
 
 #[derive(Clone, Debug)]
-struct ClientCache {
+pub struct ClientCache {
     cache: std::rc::Rc<std::cell::RefCell<HashMap<u64, CachedUserData>>>,
 }
 
@@ -37,7 +37,7 @@ impl ClientCache {
         cache.insert(fid, CachedUserData {
             username,
             pfp,
-            timestamp: Date::now(),
+            timestamp: js_sys::Date::now(),
         });
     }
 }
