@@ -23,6 +23,7 @@ futures = { version = "0.3.30", optional = true }
 futures-util = { version = "0.3.30", optional = true }
 gloo-net = "0.2"
 http-body = "1.0.0"
+js-sys = "0.3.70"
 leptos = { version = "0.6", features = ["nightly"] }
 leptos_axum = { version = "0.6", optional = true }
 leptos_meta = { version = "0.6", features = ["nightly"] }

@@ -7,11 +7,15 @@ use crate::pages::home::Home;
 use crate::pages::hometest::HomeTest;
 use crate::components::navbar::Navbar;
 use crate::components::profile::Profile;
+use crate::components::cache_provider::provide_client_cache;
 use crate::pages::settings::Settings;
 use crate::pages::writersroom::WritersRoom;
 
 #[component]
 pub fn App() -> impl IntoView {
+    // provide the client cache through context
+    provide_client_cache();
+    
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
 

@@ -9,6 +9,7 @@ pub fn CastEntry(
     cast: Cast,
     #[prop(into)] lazy_load_index: Signal<bool>,
 ) -> impl IntoView {
+    let client_cache = use_context::<RwSignal<ClientCache>>().expect("ClientCache should be provided");
     let (user_data, set_user_data) = create_signal(None::<(String, String)>);
     let (is_visible, set_is_visible) = create_signal(false);
     let (cast_add_body, _set_cast_add_body) = create_signal(cast.data.castAddBody.clone());
@@ -17,18 +18,23 @@ pub fn CastEntry(
 
     let load_user_data = create_action(move |_: &()| {
         let fid = cast.data.fid;
+        let client_cache = client_cache.get();
         async move {
-            let username = get_user_data(fid, 6).await.ok()
-                .and_then(|response| Some(response.data.user_data_body.value));
-            let pfp = get_user_data(fid, 1).await.ok()
-                .and_then(|response| Some(response.data.user_data_body.value));
-
-            log::debug!("username: {:?}, pfp: {:?}", username, pfp);
-
-            if let (Some(username), Some(pfp)) = (username, pfp) {
-                set_user_data(Some((username, pfp)));
+            if let Some(cached_data) = client_cache.get(fid) {
+                set_user_data(Some(cached_data));
             } else {
-                log::warn!("failed to fetch user data for fid: {}", fid);
+                let username = get_user_data(fid, 6).await.ok()
+                    .and_then(|response| Some(response.data.user_data_body.value));
+                let pfp = get_user_data(fid, 1).await.ok()
+                    .and_then(|response| Some(response.data.user_data_body.value));
+    
+                log::debug!("username: {:?}, pfp: {:?}", username, pfp);
+    
+                if let (Some(username), Some(pfp)) = (username, pfp) {
+                    set_user_data(Some((username, pfp)));
+                } else {
+                    log::warn!("failed to fetch user data for fid: {}", fid);
+                }
             }
         }
     });
