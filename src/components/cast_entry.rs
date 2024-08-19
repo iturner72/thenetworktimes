@@ -2,6 +2,7 @@ use leptos::*;
 use leptos_router::A;
 use crate::models::farcaster::{Cast, UserDataResponse};
 use crate::components::cache_provider::ClientCache;
+use crate::{log_debug, log_info, log_error};
 use wasm_bindgen::prelude::*;
 use web_sys::{IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit};
 
@@ -22,6 +23,7 @@ pub fn CastEntry(
         let client_cache = client_cache.get();
         async move {
             if let Some(cached_data) = client_cache.get(fid) {
+                log_debug!("using client cached data for fid: {}", fid);
                 set_user_data(Some(cached_data));
             } else {
                 let username = get_user_data(fid, 6).await.ok()
@@ -31,7 +33,8 @@ pub fn CastEntry(
     
     
                 if let (Some(username), Some(pfp)) = (username, pfp) {
-                    log::info!("updating client cache and user data for fid: {}", fid);
+//                    log::info!("updating client cache and user data for fid: {}", fid);
+//                    log_debug!("updating client cache and user data for fid: {}", fid);
                     client_cache.set(fid, username.clone(), pfp.clone());
                     set_user_data(Some((username, pfp)));
                 } else {
@@ -256,7 +259,8 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
     // Check cache
     match get_user_data_from_cache(&mut redis_conn, &cache_key).await {
         Ok(Some(cached_data)) => {
-            info!("cache hit for fid: {}, type: {}", fid, user_data_type);
+//            info!("cache hit for fid: {}, type: {}", fid, user_data_type);
+            log_info!("cache hit for fid: {}, type: {}", fid, user_data_type);
             return Ok(cached_data);
         }
         Ok(None) => {

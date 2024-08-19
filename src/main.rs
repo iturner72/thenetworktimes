@@ -23,6 +23,7 @@ cfg_if! {
         use thenetworktimes::components::chat::{SseStream, send_message_stream};
         use thenetworktimes::database::db::establish_connection;
         use thenetworktimes::state::AppState;
+        use thenetworktimes::rogging;
         use thenetworktimes::handlers::create_message;
         use thenetworktimes::services::hubble::*;
 
@@ -34,7 +35,8 @@ cfg_if! {
             // here since it's just so convenient (i should write tests for these things)
         
             dotenv().ok();
-            env_logger::init_from_env(Env::default().default_filter_or("info"));
+            rogging::init_logging();
+//            env_logger::init_from_env(Env::default().default_filter_or("info"));
         
             let conf = get_configuration(None).await.unwrap();
             let leptos_options = conf.leptos_options.clone();
