@@ -2,7 +2,7 @@ use leptos::*;
 use leptos_router::A;
 use crate::models::farcaster::{Cast, UserDataResponse};
 use crate::components::cache_provider::ClientCache;
-use crate::{log_debug, log_info, log_error};
+use crate::{log_debug, log_info};
 use wasm_bindgen::prelude::*;
 use web_sys::{IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit};
 
@@ -33,8 +33,7 @@ pub fn CastEntry(
     
     
                 if let (Some(username), Some(pfp)) = (username, pfp) {
-//                    log::info!("updating client cache and user data for fid: {}", fid);
-//                    log_debug!("updating client cache and user data for fid: {}", fid);
+                    log_info!("updating client cache and user data for fid: {}", fid);
                     client_cache.set(fid, username.clone(), pfp.clone());
                     set_user_data(Some((username, pfp)));
                 } else {
@@ -224,7 +223,6 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
     use crate::state::AppState;
     use axum::extract::Query;
     use std::fmt;
-    use log::{debug, info, warn};
 
     #[derive(Debug)]
     enum UserDataError {
@@ -249,7 +247,7 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
         ServerFnError::ServerError(e.to_string())
     }
 
-    debug!("get_user_data called with fid: {}, user_data_type: {}", fid, user_data_type);
+    crate::log_debug!("get_user_data called with fid: {}, user_data_type: {}", fid, user_data_type);
 
     let app_state = use_context::<AppState>().expect("Failed to get AppState from context");
     let mut redis_conn = app_state.redis_pool.clone();
@@ -264,10 +262,10 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
             return Ok(cached_data);
         }
         Ok(None) => {
-            debug!("cache miss for fid: {}, type: {}", fid, user_data_type);
+            crate::log_debug!("cache miss for fid: {}, type: {}", fid, user_data_type);
         }
         Err(e) => {
-            warn!("error reading from cache for fid {}, type {}: {}", fid, user_data_type, e);
+            crate::log_warn!("error reading from cache for fid {}, type {}: {}", fid, user_data_type, e);
             return Err(UserDataError::CacheReadError(e.to_string())).map_err(to_server_error);
         }
     }
@@ -279,25 +277,25 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
 
     match get_user_data_by_fid(Query(params)).await {
         Ok(json) => {
-            debug!("successfully fetched user data for fid: {}, type: {}", fid, user_data_type);
+            crate::log_debug!("successfully fetched user data for fid: {}, type: {}", fid, user_data_type);
             match serde_json::from_value::<UserDataResponse>(json.0) {
                 Ok(user_data) => {
                     // Update cache
                     if let Err(e) = set_user_data_to_cache(&mut redis_conn, &cache_key, &user_data).await {
-                        warn!("failed to update cache for fid {}, type {}: {}", fid, user_data_type, e);
+                        crate::log_warn!("failed to update cache for fid {}, type {}: {}", fid, user_data_type, e);
                         return Err(UserDataError::CacheWriteError(e.to_string())).map_err(to_server_error);
                     }
-                    debug!("successfully updated cache for fid: {}, type: {}", fid, user_data_type);
+                    crate::log_debug!("successfully updated cache for fid: {}, type: {}", fid, user_data_type);
                     Ok(user_data)
                 }
                 Err(e) => {
-                    warn!("failed to parse user data for fid {}, type {}: {}", fid, user_data_type, e);
+                    crate::log_warn!("failed to parse user data for fid {}, type {}: {}", fid, user_data_type, e);
                     Err(UserDataError::ParseError(e.to_string())).map_err(to_server_error)
                 }
             }
         }
         Err(e) => {
-            warn!("failed to fetch user data for fid {}, type {}: {}", fid, user_data_type, e);
+            crate::log_warn!("failed to fetch user data for fid {}, type {}: {}", fid, user_data_type, e);
             Err(UserDataError::FetchError(e.to_string())).map_err(to_server_error)
         }
     }

@@ -2,7 +2,7 @@ use cfg_if::cfg_if;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use log::{LevelFilter, Log, info, debug, warn, error};
+        use log::LevelFilter;
         use std::env;
 
         pub fn init_logging() {
@@ -48,7 +48,7 @@ macro_rules! custom_log {
                 }
             } else {
                 let msg = format!("[CLIENT] [{}] {}", $level.to_uppercase(), format_args!($($arg)+));
-                $crate::rogging::log(&msg);
+                $crate::wogging::log(&msg);
             }
         }
     }};

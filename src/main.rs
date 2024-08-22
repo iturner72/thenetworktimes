@@ -12,7 +12,6 @@ cfg_if! {
             response::sse::Sse,
         };
         use dotenv::dotenv;
-        use env_logger::Env;
         use leptos::*;
         use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
         use tokio::sync::mpsc;
@@ -23,7 +22,7 @@ cfg_if! {
         use thenetworktimes::components::chat::{SseStream, send_message_stream};
         use thenetworktimes::database::db::establish_connection;
         use thenetworktimes::state::AppState;
-        use thenetworktimes::rogging;
+        use thenetworktimes::wogging;
         use thenetworktimes::handlers::create_message;
         use thenetworktimes::services::hubble::*;
 
@@ -35,7 +34,7 @@ cfg_if! {
             // here since it's just so convenient (i should write tests for these things)
         
             dotenv().ok();
-            rogging::init_logging();
+            wogging::init_logging();
 //            env_logger::init_from_env(Env::default().default_filter_or("info"));
         
             let conf = get_configuration(None).await.unwrap();
