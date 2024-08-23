@@ -2,7 +2,7 @@ use leptos::*;
 use leptos_router::A;
 use crate::models::farcaster::{Cast, UserDataResponse};
 use crate::components::cache_provider::ClientCache;
-use crate::{log_debug, log_info};
+use crate::{log_debug, log_error, log_info};
 use wasm_bindgen::prelude::*;
 use web_sys::{IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit};
 
@@ -26,17 +26,21 @@ pub fn CastEntry(
                 log_debug!("using client cached data for fid: {}", fid);
                 set_user_data(Some(cached_data));
             } else {
-                let username = get_user_data(fid, 6).await.ok()
-                    .and_then(|response| Some(response.data.user_data_body.value));
-                let pfp = get_user_data(fid, 1).await.ok()
-                    .and_then(|response| Some(response.data.user_data_body.value));
-    
-    
-                if let (Some(username), Some(pfp)) = (username, pfp) {
-                    log_info!("updating client cache and user data for fid: {}", fid);
-                    client_cache.set(fid, username.clone(), pfp.clone());
-                    set_user_data(Some((username, pfp)));
-                } else {
+                log_debug!("fetching user data for fid: {}", fid);
+                let username_result = get_user_data(fid, 6).await;
+                let pfp_result = get_user_data(fid, 1).await;
+
+                match (username_result, pfp_result) {
+                    (Ok(username_response), Ok(pfp_response)) => {
+                        let username = username_response.data.user_data_body.value;
+                        let pfp = pfp_response.data.user_data_body.value;
+                        log_info!("updating client cache and user data for fid: {}", fid);
+                        client_cache.set(fid, username.clone(), pfp.clone());
+                        set_user_data(Some((username, pfp)));
+                    },
+                    (Err(e), _) | (_, Err(e)) => {
+                        log_error!("failed to fetch user data for fid {}: {}", fid, e);
+                    }
                 }
             }
         }
@@ -54,7 +58,7 @@ pub fn CastEntry(
         let element = element_ref.get().expect("div to be available");
 
         let observer_callback = Closure::wrap(Box::new(move |entries: Vec<IntersectionObserverEntry>, _: IntersectionObserver| {
-            if let Some(entry) = entries.get(0) {
+            if let Some(entry) = entries.first() {
                 if entry.is_intersecting() {
                     set_is_visible.set(true);
                 }
