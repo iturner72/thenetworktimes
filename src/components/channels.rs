@@ -124,21 +124,15 @@ pub fn Channels(
     });
 
     create_effect({
-        let channels = channels.clone();
-        let lead_usernames = lead_usernames.clone();
-        let set_error_message = set_error_message.clone();
         let ongoing_requests = ongoing_requests.clone();
         move |_| {
             for channel in channels().iter() {
                 let fid = channel.leadFid;
                 if !lead_usernames().contains_key(&fid) && !ongoing_requests.borrow().contains(&fid) {
                     ongoing_requests.borrow_mut().insert(fid);
-                    let set_lead_usernames = set_lead_usernames.clone();
-                    let lead_usernames = lead_usernames.clone();
-                    let set_error_message = set_error_message.clone();
                     let ongoing_requests = ongoing_requests.clone();
                     spawn_local(async move {
-                        match fetch_username(fid, lead_usernames.clone().into()).await {
+                        match fetch_username(fid, lead_usernames.into()).await {
                             Ok(username) => {
                                 set_lead_usernames.update(|usernames| {
                                     usernames.insert(fid, username);
