@@ -13,6 +13,12 @@ pub struct ClientCache {
     cache: std::rc::Rc<std::cell::RefCell<HashMap<u64, CachedUserData>>>,
 }
 
+impl Default for ClientCache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ClientCache {
     pub fn new() -> Self {
         ClientCache {
@@ -20,6 +26,7 @@ impl ClientCache {
         }
     }
 
+    // i think this is bugged because timestamp but not sure yet
     pub fn get(&self, fid: u64) -> Option<(String, String)> {
         let cache = self.cache.borrow();
         cache.get(&fid).and_then(|data| {
