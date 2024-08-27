@@ -147,7 +147,7 @@ pub fn CastEntry(
                 </Suspense>
 
                 {move || {
-                    cast_add_body.get().and_then(|body| {
+                    cast_add_body.get().map(|body| {
                         Some(body.embeds.iter().filter_map(|embed| {
                             embed.url.as_ref().map(|url| {
                                 let url_clone = url.clone();
@@ -230,19 +230,19 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
 
     #[derive(Debug)]
     enum UserDataError {
-        CacheReadError(String),
-        CacheWriteError(String),
-        FetchError(String),
-        ParseError(String),
+        CacheRead(String),
+        CacheWrite(String),
+        Fetch(String),
+        Parse(String),
     }
     
     impl fmt::Display for UserDataError {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
-                UserDataError::CacheReadError(e) => write!(f, "cache read error: {}", e),
-                UserDataError::CacheWriteError(e) => write!(f, "cache write error: {}", e),
-                UserDataError::FetchError(e) => write!(f, "fetch error: {}", e),
-                UserDataError::ParseError(e) => write!(f, "parse error: {}", e),
+                UserDataError::CacheRead(e) => write!(f, "cache read error: {}", e),
+                UserDataError::CacheWrite(e) => write!(f, "cache write error: {}", e),
+                UserDataError::Fetch(e) => write!(f, "fetch error: {}", e),
+                UserDataError::Parse(e) => write!(f, "parse error: {}", e),
             }
         }
     }
@@ -270,7 +270,7 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
         }
         Err(e) => {
             crate::log_warn!("error reading from cache for fid {}, type {}: {}", fid, user_data_type, e);
-            return Err(UserDataError::CacheReadError(e.to_string())).map_err(to_server_error);
+            return Err(to_server_error(UserDataError::CacheRead(e.to_string())))
         }
     }
 
@@ -287,20 +287,20 @@ pub async fn get_user_data(fid: u64, user_data_type: u8) -> Result<UserDataRespo
                     // Update cache
                     if let Err(e) = set_user_data_to_cache(&mut redis_conn, &cache_key, &user_data).await {
                         crate::log_warn!("failed to update cache for fid {}, type {}: {}", fid, user_data_type, e);
-                        return Err(UserDataError::CacheWriteError(e.to_string())).map_err(to_server_error);
+                        return Err(to_server_error(UserDataError::CacheWrite(e.to_string())))
                     }
                     crate::log_debug!("successfully updated cache for fid: {}, type: {}", fid, user_data_type);
                     Ok(user_data)
                 }
                 Err(e) => {
                     crate::log_warn!("failed to parse user data for fid {}, type {}: {}", fid, user_data_type, e);
-                    Err(UserDataError::ParseError(e.to_string())).map_err(to_server_error)
+                    Err(to_server_error(UserDataError::Parse(e.to_string())))
                 }
             }
         }
         Err(e) => {
             crate::log_warn!("failed to fetch user data for fid {}, type {}: {}", fid, user_data_type, e);
-            Err(UserDataError::FetchError(e.to_string())).map_err(to_server_error)
+            Err(to_server_error(UserDataError::Fetch(e.to_string())))
         }
     }
 
