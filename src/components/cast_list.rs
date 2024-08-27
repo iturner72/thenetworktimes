@@ -19,10 +19,11 @@ pub fn CastList(
         async move {
             set_is_loading.set(true);
             match get_casts_by_channel(current_channel, current_page, limit).await {
-                Ok(fetched_casts) => {
+                Ok(mut fetched_casts) => {
                     if fetched_casts.is_empty() {
                         set_has_more.set(false);
                     } else {
+                        fetched_casts.reverse();
                         set_cast_list.update(|list| list.extend(fetched_casts));
                     }
                     set_error.set(None);
@@ -154,4 +155,3 @@ pub async fn get_casts_by_channel(channel: String, page: u64, limit: u64) -> Res
 
     Ok(casts)
 }
-
