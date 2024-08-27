@@ -115,7 +115,7 @@ pub struct TargetCastId {
 
 // channels
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq)]
 #[allow(non_snake_case)]
 pub struct Channel {
     pub createdAt: u64,

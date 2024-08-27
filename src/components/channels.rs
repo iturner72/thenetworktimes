@@ -87,8 +87,10 @@ pub fn Channels(
     let (channels, set_channels) = create_signal(Vec::new());
     let (lead_usernames, set_lead_usernames) = create_signal(HashMap::new());
     let (error_message, set_error_message) = create_signal(None);
+    let (search_query, set_search_query) = create_signal(String::new());
+    let ongoing_requests = std::cell::RefCell::new(HashSet::new());
 
-    let desired_channels = vec![
+    let desired_channels = [
         "https://warpcast.com/~/channel/onthebrink".to_string(),
         "https://warpcast.com/~/channel/piratewires".to_string(),
         "https://warpcast.com/~/channel/moz".to_string(),
@@ -97,7 +99,6 @@ pub fn Channels(
         "https://warpcast.com/~/channel/all-in".to_string(),
     ];
 
-    let ongoing_requests = std::cell::RefCell::new(HashSet::new());
 
     spawn_local(async move {
         match fetch_channels().await {
@@ -110,6 +111,16 @@ pub fn Channels(
             },
             Err(err) => set_error_message(Some(err)),
         }
+    });
+
+    let filtered_channels = create_memo(move |_| {
+        let query = search_query().to_lowercase();
+        channels().into_iter()
+            .filter(|channel|
+                channel.id.to_lowercase().contains(&query) ||
+                channel.description.to_lowercase().contains(&query)
+            )
+            .collect::<Vec<_>>()
     });
 
     create_effect({
@@ -145,13 +156,18 @@ pub fn Channels(
     view! {
         <div class="channels-component-view w-7/12 md:w-3/12 xl:w-2/12 p-2 mx-auto">
             <h1 class="text-2xl ib text-salmon-300 text-center mb-4">"channels"</h1>
+            <input
+                type="text"
+                placeholder="grep channels"
+                on:input=move |ev| set_search_query(event_target_value(&ev))
+                class="w-full p-2 mb-4 bg-teal-700 text-aqua-500"
+            />
             {move || error_message().map(|err| view! {
                 <p class="text-salmon-800">{err}</p>
             })}
             <ul class="channels-list flex flex-col">
                 {move || {
-                    let channels = channels();
-                    channels.iter().map(|channel| {
+                    filtered_channels().iter().map(|channel| {
                         let fid = channel.leadFid;
                         let channel_id = channel.id.clone();
                         view! {
