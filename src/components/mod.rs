@@ -7,3 +7,4 @@ pub mod chat;
 pub mod threadlist;
 pub mod messagelist;
 pub mod cache_provider;
+pub mod code_block;
