@@ -28,11 +28,10 @@ pub fn App() -> impl IntoView {
 
         // sets the document title
         <Title text="thenetworktimes"/>
-
-//        <Script src="/pkg/highlight.min.js"/>
-//        <Script>
-//            "hljs.highlightAll();"
-//        </Script>
+        <Script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"/>
+        <Script>
+            "hljs.highlightAll();"
+        </Script>
 
         // content for this welcome page
         <Router fallback=|| {
