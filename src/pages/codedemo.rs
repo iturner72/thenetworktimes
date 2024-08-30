@@ -8,7 +8,9 @@ extern "C" {
     fn highlightElement(element: &web_sys::Element);
 }
 
-fn escape_html(s: &str) -> String {
+// not using highlight js to test word highlighting on stream
+
+fn _escape_html(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")
@@ -36,34 +38,48 @@ pub fn CodeDemo() -> impl IntoView {
 
 #[component]
 pub fn CodeBlock(#[prop(into)] code: String, #[prop(into)] language: String) -> impl IntoView {
-    let code_ref = create_node_ref::<html::Code>();
-    let (displayed_code, set_displayed_code) = create_signal(String::new());
+    let words = create_signal(code.split_whitespace().map(|w| (w.to_string(), false)).collect::<Vec<_>>());
 
-    create_effect(move |_| {
-        let escaped_code = escape_html(&code);
-        for (i, _) in escaped_code.char_indices() {
-            let current_code = escaped_code[..=i].to_string();
-            set_timeout(
-                move || set_displayed_code.set(current_code),
-                Duration::from_millis(20 * i as u64)
-            );
-        }
+    /*
+       lmaooo
+    
+       this happened on refresh while on codeblock route
+    
+       \textit{thread caused non-unwinding panic. aborting.}
+    
+       set_timeout impls FnOnce dummy 
+    
+       will fix later
+    
+       */
 
-        // highlight after full code display
-        set_timeout(
+    set_timeout(
+        {
             move || {
-                if let Some(element) = code_ref.get() {
-                    highlightElement(&element);
+                for (i, _) in words.0.get().iter().enumerate() {
+                    set_timeout(
+                        move || {
+                            words.1.update(|w| w[i].1 = true);
+                        },
+                        Duration::from_millis(100 * i as u64)
+                    );
                 }
-            },
-            Duration::from_millis(20 * escaped_code.len() as u64 + 100)
-        );
-    });
+            }
+        },
+        Duration::from_millis(100)
+    );
 
     view! {
-        <pre class="code-block-container flex flex-col items-start bg-gray-800 text-left w-auto">
-            <code class={format!("border-2 border-mint-800 language-{} text-sm", language)} node_ref=code_ref inner_html={move || displayed_code.get()}>
+        <pre class="code-block-container flex flex-col items-start bg-wenge-900 text-left w-auto">
+            <code class={format!("border-2 border-mint-800 language-{} text-sm", language)}>
+                {move || words.0().iter().map(|(word, highlighted)| {
+                    view! {
+                        <span class={if *highlighted { "highlighted" } else { "" }}>
+                            {word} " "
+                        </span>
+                    }
+                }).collect::<Vec<_>>()}
             </code>
         </pre>
-    }//
+    }
 }
