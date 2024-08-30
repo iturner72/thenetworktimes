@@ -1,6 +1,6 @@
+use crate::cfg_if;
 use leptos::*;
 use wasm_bindgen::prelude::*;
-use std::time::Duration;
 
 #[wasm_bindgen]
 extern "C" {
@@ -39,39 +39,52 @@ pub fn CodeDemo() -> impl IntoView {
 #[component]
 pub fn CodeBlock(#[prop(into)] code: String, #[prop(into)] language: String) -> impl IntoView {
     let words = create_signal(code.split_whitespace().map(|w| (w.to_string(), false)).collect::<Vec<_>>());
+    let streaming_complete = create_signal(false);
 
-    /*
-       lmaooo
-    
-       this happened on refresh while on codeblock route
-    
-       \textit{thread caused non-unwinding panic. aborting.}
-    
-       set_timeout impls FnOnce dummy 
-    
-       will fix later
-    
-       */
+    cfg_if! {
+        if #[cfg(not(feature = "ssr"))] {
+            use std::time::Duration;
 
-    set_timeout(
-        {
-            move || {
-                for (i, _) in words.0.get().iter().enumerate() {
-                    set_timeout(
-                        move || {
-                            words.1.update(|w| w[i].1 = true);
-                        },
-                        Duration::from_millis(100 * i as u64)
-                    );
-                }
+            set_timeout(
+                {
+                    let words = words.clone();
+                    let streaming_complete = streaming_complete.clone();
+                    move || {
+                        for (i, _) in words.0.get().iter().enumerate() {
+                            set_timeout(
+                                {
+                                    let words = words.clone();
+                                    let streaming_complete = streaming_complete.clone();
+                                    move || {
+                                        words.1.update(|w| w[i].1 = true);
+                                        if i == words.0.get().len() - 1 {
+                                            streaming_complete.1.set(true);
+                                        }
+                                    }
+                                },
+                                Duration::from_millis(50 * i as u64)
+                            );
+                        }
+                    }
+                },
+                Duration::from_millis(50)
+            );
+        }
+    }
+
+    let code_ref = create_node_ref::<html::Code>();
+
+    create_effect(move |_| {
+        if streaming_complete.0() {
+            if let Some(element) = code_ref.get() {
+                highlightElement(&element);
             }
-        },
-        Duration::from_millis(100)
-    );
+        }
+    });
 
     view! {
         <pre class="code-block-container flex flex-col items-start bg-wenge-900 text-left w-auto">
-            <code class={format!("border-2 border-mint-800 language-{} text-sm", language)}>
+            <code _ref=code_ref class={format!("border-2 border-mint-800 language-{} text-sm", language)}>
                 {move || words.0().iter().map(|(word, highlighted)| {
                     view! {
                         <span class={if *highlighted { "highlighted" } else { "" }}>
