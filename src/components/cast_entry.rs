@@ -65,8 +65,8 @@ pub fn CastEntry(
             }
         }) as Box<dyn FnMut(Vec<IntersectionObserverEntry>, IntersectionObserver)>);
 
-        let mut options = IntersectionObserverInit::new();
-        options.threshold(&JsValue::from(0.1));
+        let options = IntersectionObserverInit::new();
+        options.set_threshold(&JsValue::from(0.1));
 
         let observer = IntersectionObserver::new_with_options(
             observer_callback.as_ref().unchecked_ref(),
@@ -104,65 +104,100 @@ pub fn CastEntry(
         <div class="cast-entry" node_ref=element_ref>
             {move || {
                 match user_data.get() {
-                    Some((username, pfp)) => view! {
-                        <div class="user-info flex flex-row items-center justify-start space-x-2">
+                    Some((username, pfp)) => {
+                        view! {
+                            <div class="user-info flex flex-row items-center justify-start space-x-2">
 
-                            <A href=format!("/profile/{}", cast.data.fid)>
-                                <img src={pfp} alt="profile" class="w-12 h-12 rounded-full cursor-pointer" />
-                            </A>
-                            <A href=format!("/profile/{}", cast.data.fid)>
-                                <span class="username ib text-mint-700">{username}</span>
-                            </A>
-                        </div>
-                    },
-                    None => view! {
-                        <div class="user-info-placeholder">
-                            <div class="w-12 h-12 bg-aqua-800 rounded-full"></div>
-                            <span class="username-placeholder bg-aqua-800 w-20 h-4"></span>
-                        </div>
+                                <A href=format!("/profile/{}", cast.data.fid)>
+                                    <img
+                                        src=pfp
+                                        alt="profile"
+                                        class="w-12 h-12 rounded-full cursor-pointer"
+                                    />
+                                </A>
+                                <A href=format!("/profile/{}", cast.data.fid)>
+                                    <span class="username ib text-mint-700">{username}</span>
+                                </A>
+                            </div>
+                        }
+                    }
+                    None => {
+                        view! {
+                            <div class="user-info-placeholder">
+                                <div class="w-12 h-12 bg-aqua-800 rounded-full"></div>
+                                <span class="username-placeholder bg-aqua-800 w-20 h-4"></span>
+                            </div>
+                        }
                     }
                 }
             }}
+
             <div class="cast-content flex flex-col items-start pl-12">
-                <Suspense fallback=move || view! { <p class="pt-2 ib text-mint-700">"loading..."</p> }>
+                <Suspense fallback=move || {
+                    view! { <p class="pt-2 ib text-mint-700">"loading..."</p> }
+                }>
                     {move || {
-                        processed_content.get().map(|parts| {
-                            view! {
-                                <p class="ir text-md text-pistachio-200">
-                                    {parts.into_iter().map(|part| {
-                                        if part.starts_with("http") {
-                                            view! {
-                                                <a href={part.clone()} target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline">
-                                                    {part}
-                                                </a>
-                                            }.into_view()
-                                        } else {
-                                            view! { <span>{part}</span> }.into_view()
-                                        }
-                                    }).collect::<Vec<_>>()}
-                                </p>
-                            }
-                        })
+                        processed_content
+                            .get()
+                            .map(|parts| {
+                                view! {
+                                    <p class="ir text-md text-pistachio-200">
+                                        {parts
+                                            .into_iter()
+                                            .map(|part| {
+                                                if part.starts_with("http") {
+                                                    view! {
+                                                        <a
+                                                            href=part.clone()
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            class="text-blue-400 hover:underline"
+                                                        >
+                                                            {part}
+                                                        </a>
+                                                    }
+                                                        .into_view()
+                                                } else {
+                                                    view! { <span>{part}</span> }.into_view()
+                                                }
+                                            })
+                                            .collect::<Vec<_>>()}
+                                    </p>
+                                }
+                            })
                     }}
+
                 </Suspense>
 
                 {move || {
-                    cast_add_body.get().map(|body| {
-                        Some(body.embeds.iter().filter_map(|embed| {
-                            embed.url.as_ref().map(|url| {
-                                let url_clone = url.clone();
-                                view! {
-                                    <img
-                                        src={url.clone()}
-                                        alt="cast image"
-                                        class="mt-2 max-w-sm h-auto rounded-lg cursor-pointer"
-                                        on:click=move |_| open_modal(url_clone.clone())
-                                    />
-                                }
-                            })
-                        }).collect::<Vec<_>>())
-                    })
+                    cast_add_body
+                        .get()
+                        .map(|body| {
+                            Some(
+                                body
+                                    .embeds
+                                    .iter()
+                                    .filter_map(|embed| {
+                                        embed
+                                            .url
+                                            .as_ref()
+                                            .map(|url| {
+                                                let url_clone = url.clone();
+                                                view! {
+                                                    <img
+                                                        src=url.clone()
+                                                        alt="cast image"
+                                                        class="mt-2 max-w-sm h-auto rounded-lg cursor-pointer"
+                                                        on:click=move |_| open_modal(url_clone.clone())
+                                                    />
+                                                }
+                                            })
+                                    })
+                                    .collect::<Vec<_>>(),
+                            )
+                        })
                 }}
+
             </div>
 
             {move || {
@@ -170,7 +205,7 @@ pub fn CastEntry(
                     view! {
                         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                             <div class="bg-gray-800 p-4 rounded-lg max-w-auto max-h-screen overflow-auto">
-                                <ImageView url={modal_image_url.get().unwrap_or_default()} />
+                                <ImageView url=modal_image_url.get().unwrap_or_default()/>
                                 <button
                                     class="mt-4 px-4 py-2 bg-aqua-800 text-gray-500 hover:bg-gray-300"
                                     on:click=close_modal
@@ -184,6 +219,7 @@ pub fn CastEntry(
                     view! { <div></div> }
                 }
             }}
+
         </div>
     }
 }
@@ -191,7 +227,7 @@ pub fn CastEntry(
 #[component]
 fn ImageView(#[prop(into)] url: String) -> impl IntoView {
     view! {
-        <img src={url} alt="Cast image" class="mt-2 max-w-lg max-h-screen object-contian rounded-lg" />
+        <img src=url alt="Cast image" class="mt-2 max-w-lg max-h-screen object-contian rounded-lg"/>
     }
 }
 
