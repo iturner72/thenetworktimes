@@ -9,58 +9,51 @@ extern "C" {
 
 #[component]
 pub fn MermaidDemo() -> impl IntoView {
-    let diagram = r#"graph TD
+    let diagram = r#"
+graph TD
+    subgraph Client1 ["Client 1"]
+        A1[User 1 Input] --> B1[EventSource]
+    end
 
-        A[main.rs] --> B[app.rs]
-        A --> C[handlers.rs]
-        A --> D[state.rs]
-        A --> E[fileserv.rs]
-        
-        B --> F[pages]
-        B --> G[components]
-        
-        H[lib.rs] --> B
-        H --> C
-        H --> D
-        H --> E
-        H --> F
-        H --> G
-        H --> I[models]
-        H --> J[schema]
-        H --> K[services]
-        
-        L[chat.rs] --> M[database]
-        L --> I
-        L --> J
-        
-        C --> M
-        C --> I
-        
-        subgraph Core
-            A
-            B
-            H
-        end
-        
-        subgraph Frontend
-            F
-            G
-        end
-        
-        subgraph Backend
-            C
-            D
-            E
-            I
-            J
-            K
-            M
-        end
-        
-        subgraph Features
-            L
-        end
+    subgraph Client2 ["Client 2"]
+        A2[User 2 Input] --> B2[EventSource]
+    end
 
+    subgraph Server ["Server (Leptos 0.6 or 0.7)"]
+        C[Axum SSE Handler]
+        D[Tokio Runtime]
+        E1[Tokio Task 1]
+        E2[Tokio Task 2]
+        F1[MPSC Channel 1]
+        F2[MPSC Channel 2]
+        G1[SseStream 1]
+        G2[SseStream 2]
+        H[AI Service]
+    end
+
+    B1 --> C
+    B2 --> C
+    C --> D
+    D --> E1
+    D --> E2
+    E1 --> F1
+    E2 --> F2
+    F1 --> G1
+    F2 --> G2
+    E1 --> H
+    E2 --> H
+    G1 --> B1
+    G2 --> B2
+
+    classDef client fill:#446784,stroke:#DCE9E6,stroke-width:2px,color:#DCE9E6;
+    classDef server fill:#206D5F,stroke:#DCE9E6,stroke-width:2px,color:#DCE9E6;
+    classDef channel fill:#715F58,stroke:#DCE9E6,stroke-width:2px,color:#DCE9E6;
+    classDef aiService fill:#00AAA8,stroke:#DCE9E6,stroke-width:2px,color:#DCE9E6;
+
+    class A1,A2,B1,B2 client;
+    class C,D,E1,E2,G1,G2 server;
+    class F1,F2 channel;
+    class H aiService;
     "#;
 
     let diagram_ref = create_node_ref::<html::Div>();
@@ -83,14 +76,14 @@ pub fn MermaidDemo() -> impl IntoView {
     });
 
     view! {
-        <div class="flex flex-row text-mint-700 bg-black p-4">
+        <div class="flex flex-col items-center text-mint-700 bg-black p-4">
             <div>
                 <h2 class="ib text-3xl mb-4">"Mermaid Diagram Demo"</h2>
                 <div _ref=diagram_ref id="mermaid-diagram" class="mermaid">
                     {diagram}
                 </div>
             </div>
-            <div>
+            <div class="w-2/3">
                 <p class="mt-4">"Render status: " {render_status}</p>
                 <pre class="mt-4 p-2 bg-purple-900 rounded">{diagram}</pre>
             </div>
