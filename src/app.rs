@@ -37,14 +37,19 @@ pub fn App() -> impl IntoView {
 
         <Script type_="module">
             r#"
-            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
             
             console.log('Initializing Mermaid');
             mermaid.initialize({ 
                 startOnLoad: false,
                 theme: 'default',
                 securityLevel: 'loose',
-                logLevel: 'debug'
+                logLevel: 'warn',
+                flowchart: {
+                    useMaxWidth: false,
+                    htmlLabels: true,
+                    curve: 'basis'
+                }
             });
 
             async function render_mermaid(elementId, diagram) {
@@ -69,7 +74,6 @@ pub fn App() -> impl IntoView {
 
             window.render_mermaid = render_mermaid;
 
-            // Use mermaid.run instead of mermaid.init
             mermaid.run().then(() => {
                 console.log('Mermaid setup complete');
             }).catch((error) => {
