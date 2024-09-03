@@ -9,7 +9,8 @@ pub fn Navbar() -> impl IntoView {
             <A href="/feed" class="text-2xl text-wenge-300 hover:text-mint-700">"feed"</A>
             <A href="/writersroom" class="text-2xl text-salmon-400 hover:text-salmon-600">"writersroom"</A>
             <A href="/settings" class="text-2xl text-salmon-400 hover:text-salmon-600">"settings"</A>
-            <A href="/codedemo" class="text-2xl text-mint-700 hover:text-salmon-600">"highlightjs"</A>
+            <A href="/codedemo" class="text-2xl text-gray-700 hover:text-salmon-600">"highlightjs"</A>
+            <A href="/mermaiddemo" class="text-2xl text-mint-700 hover:text-salmon-600">"mermaidchart"</A>
         </div>
     }
 }
