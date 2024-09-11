@@ -61,7 +61,7 @@ graph TD
 
     create_effect(move |_| {
         if let Some(element) = diagram_ref.get() {
-            log("Attempting to render Mermaid diagram");
+            log("attempting to render Mermaid diagram");
             let event_init = web_sys::CustomEventInit::new();
             event_init.set_detail(&JsValue::from_str(diagram));
             
@@ -71,21 +71,21 @@ graph TD
             )
             .unwrap();
             element.dispatch_event(&event).unwrap();
-            set_render_status.set("Render event dispatched".to_string());
+            set_render_status.set("render event dispatched".to_string());
         }
     });
 
     view! {
-        <div class="flex flex-col items-center text-mint-700 bg-black p-4">
+        <div class="flex flex-col items-center text-purple-400 bg-black p-4">
             <div>
-                <h2 class="ib text-3xl mb-4">"Mermaid Diagram Demo"</h2>
+                <h2 class="ib text-3xl mb-4">"mermaid"</h2>
                 <div _ref=diagram_ref id="mermaid-diagram" class="mermaid">
                     {diagram}
                 </div>
             </div>
-            <div class="w-2/3">
-                <p class="mt-4">"Render status: " {render_status}</p>
-                <pre class="mt-4 p-2 bg-purple-900 rounded">{diagram}</pre>
+            <div class="w-10/12">
+                <p class="mt-4">"render status: " {render_status}</p>
+                <pre class="mt-4 p-4 bg-purple-900 text-blue-100 text-left rounded">{diagram}</pre>
             </div>
         </div>
     }
