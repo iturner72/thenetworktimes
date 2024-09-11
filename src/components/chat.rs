@@ -66,7 +66,7 @@ cfg_if! {
                 info!("Sending message to OpenAI API");
                 info!("Current thread id: {}", thread_id.to_string());
 
-                let history = fetch_message_history(&thread_id).await?;
+                let history = fetch_message_history(thread_id).await?;
         
                 let api_messages = history.into_iter()
                     .map(|msg| serde_json::json!({
@@ -78,7 +78,7 @@ cfg_if! {
 //                info!("history: {:?}", api_messages.clone());
 
                 let response = self.client.post("https://api.anthropic.com/v1/messages")
-                    .header("x-api-key", format!("{}", self.api_key))
+                    .header("x-api-key", self.api_key.to_string())
                     .header("anthropic-version", "2023-06-01")
                     .header("Content-Type", "application/json")
                     .json(&serde_json::json!({
@@ -103,7 +103,7 @@ cfg_if! {
                             for line in event.trim().lines() {
                                 if line.trim() == "event: message_stop" {
                                     info!("Received message_stop event");
-                                    tx.send(Ok(Event::default().data("[DONE]".to_string()))).await.ok();
+                                    tx.send(Ok(Event::default().data("[DONE]"))).await.ok();
                                     break;
                                 } else if line.trim().starts_with("data: ") {
                                     let json_str = &line.trim()[6..];
@@ -141,7 +141,7 @@ cfg_if! {
                 info!("Sending message to OpenAI API");
                 info!("Current thread id: {}", thread_id.to_string());
 
-                let history = fetch_message_history(&thread_id).await?;
+                let history = fetch_message_history(thread_id).await?;
 
                 let api_messages = history.into_iter()
                     .map(|msg| serde_json::json!({
@@ -176,7 +176,7 @@ cfg_if! {
                             for line in event.trim().lines() {
                                 if line.trim() == "data: [DONE]" {
                                     info!("Received [DONE] event");
-                                    tx.send(Ok(Event::default().data("[DONE]".to_string()))).await.ok();
+                                    tx.send(Ok(Event::default().data("[DONE]"))).await.ok();
                                     break;
                                 } else if line.trim().starts_with("data: ") {
                                     let json_str = &line.trim()[6..];
