@@ -17,7 +17,7 @@ cfg_if! {
             content: String,
             role: String,
             active_model: String,
-            active_lab: Option<String>,
+            active_lab: String,
         }
 
         pub async fn create_message(

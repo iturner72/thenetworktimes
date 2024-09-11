@@ -226,27 +226,21 @@ cfg_if! {
             }
         }
 
-        pub async fn send_message_stream(thread_id: String, model: String, tx: mpsc::Sender<Result<Event, anyhow::Error>>) {
+        pub async fn send_message_stream(thread_id: String, model: String, active_lab: String, tx: mpsc::Sender<Result<Event, anyhow::Error>>) {
             let decoded_thread_id = urlencoding::decode(&thread_id).expect("Failed to decode thread_id");
             let decoded_model = urlencoding::decode(&model).expect("Failed to decode model");
+            let decoded_lab = urlencoding::decode(&active_lab).expect("failed to decode lab");
 
-            /*
-            *  code smell (i should just pass the active lab in the query params)
-            *  this would require me to create active lab signal
-            *  i am so lazy, i will do it later... but either way, it will still match the labs
-            *  like this if i want to allow for poly threads. 
-            */
-
-            let result = match decoded_model.as_ref() {
-                "claude-3-haiku-20240307" | "claude-3-sonnet-20240229" | "claude-3-opus-20240229" | "claude-3-5-sonnet-20240620" => {
+            let result = match decoded_lab.as_ref() {
+                "anthropic" => {
                     let anthropic_service = AnthropicService::new(decoded_model.into_owned());
                     anthropic_service.send_message(&decoded_thread_id.into_owned(), tx.clone()).await
                 },
-                "gpt-4o-mini" | "gpt-4o" | "gpt-4-turbo" => {
-                    let openai_service = OpenAIService::new(decoded_model.into_owned());
-                    openai_service.send_message(&decoded_thread_id.into_owned(), tx.clone()).await
+                "openai" => {
+                let openai_service = OpenAIService::new(decoded_model.into_owned());
+                openai_service.send_message(&decoded_thread_id.into_owned(), tx.clone()).await
                 },
-                _ => Err(anyhow::anyhow!("ain't support this model yet gang")),
+                _ => Err(anyhow::anyhow!("unsupported lab: {}", decoded_lab)),
             };
 
             if let Err(e) = result {
@@ -259,7 +253,8 @@ cfg_if! {
 #[component]
 pub fn Chat(
     thread_id: ReadSignal<String>,
-    model: ReadSignal<String>
+    model: ReadSignal<String>,
+    lab: ReadSignal<String>
 ) -> impl IntoView {
     let (message, set_message) = create_signal(String::new());
     let (response, set_response) = create_signal(String::new());
@@ -270,8 +265,7 @@ pub fn Chat(
         let message_value = message.get();
         let current_thread_id = thread_id.get_untracked();
         let selected_model = model.get_untracked();
-        let set_response = set_response.clone();
-        let set_is_sending = set_is_sending.clone();
+        let active_lab = lab.get_untracked();
         let role = "user";
 
         spawn_local(async move {
@@ -285,30 +279,35 @@ pub fn Chat(
                 content: Some(message_value.clone()),
                 role: role.to_string(),
                 active_model: selected_model.clone(),
-                active_lab: Some("openai".to_string()),
+                active_lab: active_lab.clone(),
             };
 
             match create_message(new_message_view, is_llm).await {
                 Ok(_) => {
 
-                    let thread_id_value = thread_id.get().to_string();
-                    let active_model_value = model.get().to_string();
-                    let event_source = Rc::new(EventSource::new(&format!("/api/send_message_stream?thread_id={}&model={}", urlencoding::encode(&thread_id_value), urlencoding::encode(&active_model_value))).expect("Failed to connect to SSE endpoint"));
+                    let thread_id_value = thread_id().to_string();
+                    let active_model_value = model().to_string();
+                    let active_lab_value = lab().to_string();
+                    let event_source = Rc::new(EventSource::new(
+                            &format!("/api/send_message_stream?thread_id={}&model={}&lab={}",
+                            urlencoding::encode(&thread_id_value),
+                            urlencoding::encode(&active_model_value),
+                            urlencoding::encode(&active_lab_value))
+                        ).expect("Failed to connect to SSE endpoint"));
         
         			let on_message = {
         				let event_source = Rc::clone(&event_source);
-                        let set_llm_content = set_llm_content.clone();
         				Closure::wrap(Box::new(move |event: MessageEvent| {
         					let data = event.data().as_string().unwrap();
         					if data == "[DONE]" {
                                 let llm_content_value = llm_content.get();
                                 let is_llm = true;
                                 let new_message_view = NewMessageView {
-                                    thread_id: Some(thread_id.get().clone()),
+                                    thread_id: Some(thread_id().clone()),
                                     content: Some(llm_content_value),
                                     role: "assistant".to_string(),
-                                    active_model: model.get().clone(),
-                                    active_lab: Some("openai".to_string()),
+                                    active_model: model().clone(),
+                                    active_lab: lab().clone(),
                                 };
 
                                 spawn_local(async move {
@@ -380,7 +379,7 @@ pub fn Chat(
             <div class="flex flex-row justify-center space-x-4 w-6/12 md:w-7/12">
                 <textarea
                     class="ir text-sm text-gray-600 bg-teal-800 w-full h-8 md:h-12 p-2 text-wrap"
-                    value={move || message.get()}
+                    value=message
                     on:input={move |event| {
                         set_message(event_target_value(&event));
                         let target = event.target().unwrap();

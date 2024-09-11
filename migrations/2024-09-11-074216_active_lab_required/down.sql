@@ -1,0 +1,2 @@
+ALTER TABLE messages
+ALTER COLUMN active_lab DROP NOT NULL;

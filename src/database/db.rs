@@ -1,7 +1,6 @@
 use cfg_if::cfg_if;
-
 cfg_if! {
-    if #[cfg(feature = "ssr")] {
+if #[cfg(feature = "ssr")] {
         use diesel::prelude::*;
         use diesel::PgConnection;
         use deadpool_diesel::{Manager, Pool, Runtime};
@@ -36,5 +35,4 @@ cfg_if! {
                 .filter(messages::thread_id.eq(thread_id))
                 .load::<Message>(conn)
         }
-    }
-}
+}}

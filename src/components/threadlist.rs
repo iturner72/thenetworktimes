@@ -6,7 +6,8 @@ use crate::models::conversations::ThreadView;
 #[component]
 pub fn ThreadList(
     current_thread_id: ReadSignal<String>,
-    set_current_thread_id: WriteSignal<String>
+    set_current_thread_id: WriteSignal<String>,
+    _lab: ReadSignal<String> // will use later
 ) -> impl IntoView {
     let (thread_list, set_thread_list) = create_signal(Vec::new());
     
@@ -28,32 +29,33 @@ pub fn ThreadList(
     view! {
         <div class="thread-list pt-2">
             {move || {
-                thread_list.get().into_iter().map(|thread: ThreadView| {
-                    let thread_id = thread.id.clone();
-                    let is_active = current_thread_id.get() == thread_id;
-                    let (button_class, text_class) = if is_active {
-                        ("border-teal-500 bg-teal-900", "text-teal-400 hover:text-teal-500")
-                    } else {
-                        ("border-teal-700 bg-teal-800 hover:border-teal-800 hover:bg-teal-900", "text-gray-600 hover:text-teal-500")
-                    };
-                    view! {
-                        <div class="thread-list-container text-salmon-500 flex flex-col items-start justify-center">
-                            <button 
-                                class=format!("thread-item w-full p-2 border-2 {} transition duration-0 group", button_class)
-                                on:click=move |_| set_current_thread_id(thread_id.clone())
-                            > 
-                            <p class=format!("thread-id ib pr-16 md:pr-36 text-base self-start {} transition duration-0 group", text_class)>
-                                {thread.id.clone()}
-                            </p>
-                            <div class="stats-for-nerds hidden group-hover:flex">
-                                <p class="message-created_at ir text-xs text-gray-900 hover:text-gray-700">
-                                  created: {thread.created_at.map(|dt| dt.format("%b %d, %I:%M %p").to_string()).unwrap_or_default()}
+                thread_list().into_iter()
+                    .map(|thread: ThreadView| {
+                        let thread_id = thread.id.clone();
+                        let is_active = current_thread_id() == thread_id;
+                        let (button_class, text_class) = if is_active {
+                            ("border-teal-500 bg-teal-900", "text-teal-400 hover:text-teal-500")
+                        } else {
+                            ("border-teal-700 bg-teal-800 hover:border-teal-800 hover:bg-teal-900", "text-gray-600 hover:text-teal-500")
+                        };
+                        view! {
+                            <div class="thread-list-container text-salmon-500 flex flex-col items-start justify-center">
+                                <button 
+                                    class=format!("thread-item w-full p-2 border-2 {} transition duration-0 group", button_class)
+                                    on:click=move |_| set_current_thread_id(thread_id.clone())
+                                > 
+                                <p class=format!("thread-id ib pr-16 md:pr-36 text-base self-start {} transition duration-0 group", text_class)>
+                                    {thread.id.clone()}
                                 </p>
+                                <div class="stats-for-nerds hidden group-hover:flex">
+                                    <p class="message-created_at ir text-xs text-gray-900">
+                                      created: {thread.created_at.map(|dt| dt.format("%b %d, %I:%M %p").to_string()).unwrap_or_default()}
+                                    </p>
+                                </div>
+                                </button>
                             </div>
-                            </button>
-                        </div>
-                    }
-                }).collect::<Vec<_>>()
+                        }
+                    }).collect::<Vec<_>>()
             }}
         </div>
     }

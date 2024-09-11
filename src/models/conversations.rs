@@ -16,7 +16,7 @@ pub struct MessageView {
     pub content: Option<String>,
     pub role: String,
     pub active_model: String,
-    pub active_lab: Option<String>,
+    pub active_lab: String,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
 }
@@ -27,7 +27,7 @@ pub struct NewMessageView {
     pub content: Option<String>,
     pub role: String,
     pub active_model: String,
-    pub active_lab: Option<String>,
+    pub active_lab: String,
 }
 
 
@@ -66,7 +66,7 @@ cfg_if! { if #[cfg(feature = "ssr")] {
         pub content: Option<String>,
         pub role: String,
         pub active_model: String,
-        pub active_lab: Option<String>,
+        pub active_lab: String,
         pub created_at: Option<NaiveDateTime>,
         pub updated_at: Option<NaiveDateTime>,
     }
@@ -94,7 +94,7 @@ cfg_if! { if #[cfg(feature = "ssr")] {
         pub content: Option<String>,
         pub role: String,
         pub active_model: String,
-        pub active_lab: Option<String>,
+        pub active_lab: String,
     }
 
     impl From<NewMessageView> for NewMessage {

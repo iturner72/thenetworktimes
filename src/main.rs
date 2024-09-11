@@ -29,10 +29,6 @@ cfg_if! {
         #[tokio::main]
         async fn main() {
         
-            // this is a sanity check (simple create_message function) which conflicts 
-            // with the server function of the same name, so i break my no-comments rule
-            // here since it's just so convenient (i should write tests for these things)
-        
             dotenv().ok();
             wogging::init_logging();
 //            env_logger::init_from_env(Env::default().default_filter_or("info"));
@@ -96,11 +92,12 @@ cfg_if! {
                 }))
                 .route("/api/send_message_stream", axum::routing::get(|Query(params): Query<HashMap<String, String>>| async move {
                     let (tx, rx) = mpsc::channel(1);
-                    if let (Some(thread_id), Some(model)) = (params.get("thread_id"), params.get("model")) {
+                    if let (Some(thread_id), Some(model), Some(lab)) = (params.get("thread_id"), params.get("model"), params.get("lab")) {
                         let thread_id = thread_id.clone();
                         let model = model.clone();
+                        let lab = lab.clone();
                         tokio::spawn(async move {
-                            send_message_stream(thread_id, model, tx).await;
+                            send_message_stream(thread_id, model, lab, tx).await;
                         });
                     }
                     Sse::new(SseStream { receiver: rx })
