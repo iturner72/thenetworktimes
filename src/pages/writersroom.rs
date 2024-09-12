@@ -23,6 +23,17 @@ pub fn WritersRoom() -> impl IntoView {
         set_lab(new_lab.to_string());
     };
 
+
+    let create_new_thread = create_action(|_: &()| async move {
+        create_thread().await 
+    });
+
+    create_effect(move |_| {
+        if let Some(Ok(new_thread_id)) = create_new_thread.value().get() {
+            set_thread_id(new_thread_id);
+        }
+    });
+
     view! {
         <div class="w-full flex flex-col justify-start pt-2 pl-2 pr-2 h-full">
             <div class="flex flex-row items-center justify-between">
@@ -31,6 +42,12 @@ pub fn WritersRoom() -> impl IntoView {
                     on:click=move |_| set_show_threads.update(|v| *v = !*v)
                 >
                     {move || if show_threads.get() { "hide threads" } else { "show threads" }}
+                </button>
+                <button
+                    class="self-start ib text-xs md:text-sm text-mint-700 hover:text-aqua-400i bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
+                    on:click=move |_| create_new_thread.dispatch(())
+                >
+                    "mew"
                 </button>
                 <select
                     class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900" 
@@ -69,3 +86,64 @@ pub fn WritersRoom() -> impl IntoView {
     }
 }
 
+#[server(CreateThread, "/api")]
+pub async fn create_thread() -> Result<String, ServerFnError> {
+    use diesel::prelude::*;
+    use crate::schema::threads;
+    use chrono::Utc;
+    use std::fmt;
+    use crate::state::AppState;
+    use crate::models::conversations::Thread;
+
+    #[derive(Debug)]
+    enum ThreadError {
+        Pool(String),
+        Database(diesel::result::Error),
+        Interaction(String),
+    }
+
+    impl fmt::Display for ThreadError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                ThreadError::Pool(e) => write!(f, "pool error: {}", e),
+                ThreadError::Database(e) => write!(f, "databaseb error: {}", e),
+                ThreadError::Interaction(e) => write!(f, "interaction error: {}", e),
+            }
+        }
+    }
+
+    fn to_server_error(e: ThreadError) -> ServerFnError {
+        ServerFnError::ServerError(e.to_string())
+    }
+
+    let app_state = use_context::<AppState>()
+        .expect("failed to get AppState from context");
+    let pool = app_state.pool;
+
+    let conn = pool
+        .get()
+        .await
+        .map_err(|e| ThreadError::Pool(e.to_string()))
+        .map_err(to_server_error)?;
+
+    let new_thread_id = conn
+        .interact(|conn| {
+            let new_thread = Thread {
+                id: uuid::Uuid::new_v4().to_string(),
+                created_at: Some(Utc::now().naive_utc()),
+                updated_at: Some(Utc::now().naive_utc()),
+            };
+
+            diesel::insert_into(threads::table)
+                .values(&new_thread)
+                .execute(conn)
+                .map(|_| new_thread.id)
+        })
+        .await
+        .map_err(|e| ThreadError::Interaction(e.to_string()))
+        .map_err(to_server_error)?
+        .map_err(ThreadError::Database)
+        .map_err(to_server_error)?;
+
+    Ok(new_thread_id)
+}
