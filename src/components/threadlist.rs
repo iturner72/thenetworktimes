@@ -64,24 +64,25 @@ pub fn ThreadList(
 #[server(GetThreads, "/api")]
 pub async fn get_threads() -> Result<Vec<ThreadView>, ServerFnError> {
     use diesel::prelude::*;
+    use std::fmt;
+
     use crate::state::AppState;
     use crate::models::conversations::Thread;
     use crate::schema::threads::dsl::threads as threads_table;
-    use std::fmt;
 
     #[derive(Debug)]
     enum ThreadError {
-        PoolError(String),
-        DatabaseError(diesel::result::Error),
-        InteractionError(String),
+        Pool(String),
+        Database(diesel::result::Error),
+        Interaction(String),
     }
 
     impl fmt::Display for ThreadError {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
-                ThreadError::PoolError(e) => write!(f, "Pool error: {}", e),
-                ThreadError::DatabaseError(e) => write!(f, "Database error: {}", e),
-                ThreadError::InteractionError(e) => write!(f, "Interaction error: {}", e),
+                ThreadError::Pool(e) => write!(f, "Pool error: {}", e),
+                ThreadError::Database(e) => write!(f, "Database error: {}", e),
+                ThreadError::Interaction(e) => write!(f, "Interaction error: {}", e),
             }
         }
     }
@@ -98,15 +99,19 @@ pub async fn get_threads() -> Result<Vec<ThreadView>, ServerFnError> {
     let conn = pool
         .get()
         .await
-        .map_err(|e| ThreadError::PoolError(e.to_string()))
+        .map_err(|e| ThreadError::Pool(e.to_string()))
         .map_err(to_server_error)?;
 
     let result = conn
-        .interact(|conn| threads_table.load::<Thread>(conn))
+        .interact(|conn| {
+            threads_table
+                .order(crate::schema::threads::created_at.desc())
+                .load::<Thread>(conn)
+        })
         .await
-        .map_err(|e| ThreadError::InteractionError(e.to_string()))
+        .map_err(|e| ThreadError::Interaction(e.to_string()))
         .map_err(to_server_error)?
-        .map_err(ThreadError::DatabaseError)
+        .map_err(ThreadError::Database)
         .map_err(to_server_error)?;
 
     Ok(result.into_iter().map(ThreadView::from).collect())

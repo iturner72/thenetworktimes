@@ -106,7 +106,7 @@ pub async fn create_thread() -> Result<String, ServerFnError> {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
                 ThreadError::Pool(e) => write!(f, "pool error: {}", e),
-                ThreadError::Database(e) => write!(f, "databaseb error: {}", e),
+                ThreadError::Database(e) => write!(f, "database error: {}", e),
                 ThreadError::Interaction(e) => write!(f, "interaction error: {}", e),
             }
         }

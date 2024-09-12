@@ -234,11 +234,11 @@ cfg_if! {
             let result = match decoded_lab.as_ref() {
                 "anthropic" => {
                     let anthropic_service = AnthropicService::new(decoded_model.into_owned());
-                    anthropic_service.send_message(&decoded_thread_id.into_owned(), tx.clone()).await
+                    anthropic_service.send_message(&decoded_thread_id, tx.clone()).await
                 },
                 "openai" => {
                 let openai_service = OpenAIService::new(decoded_model.into_owned());
-                openai_service.send_message(&decoded_thread_id.into_owned(), tx.clone()).await
+                openai_service.send_message(&decoded_thread_id, tx.clone()).await
                 },
                 _ => Err(anyhow::anyhow!("unsupported lab: {}", decoded_lab)),
             };
