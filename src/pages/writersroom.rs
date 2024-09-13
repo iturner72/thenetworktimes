@@ -3,6 +3,7 @@ use leptos::*;
 use crate::components::chat::Chat;
 use crate::components::threadlist::ThreadList;
 use crate::components::messagelist::MessageList;
+use crate::components::toast::Toast;
 
 #[component]
 pub fn WritersRoom() -> impl IntoView {
@@ -10,6 +11,8 @@ pub fn WritersRoom() -> impl IntoView {
     let (model, set_model) = create_signal("gpt-4o-mini".to_string());
     let (lab, set_lab) = create_signal("openai".to_string());
     let (thread_id, set_thread_id) = create_signal("0001".to_string());
+    let (toast_visible, set_toast_visible) = create_signal(false);
+    let (toast_message, set_toast_message) = create_signal(String::new());
 
     let handle_model_change = move |ev| {
         let value = event_target_value(&ev);
@@ -23,22 +26,46 @@ pub fn WritersRoom() -> impl IntoView {
         set_lab(new_lab.to_string());
     };
 
+    let create_new_thread = create_action(move |_: &()| {
 
-    let create_new_thread = create_action(|_: &()| async move {
-        create_thread().await 
+        async move {
+            match create_thread().await {
+                Ok(new_thread_id) => {
+                    set_thread_id(new_thread_id.clone());
+                    set_toast_message(format!("New thread created: {}", new_thread_id));
+                    set_toast_visible(true);
+                    
+                    // Automatically hide the toast after 3 seconds
+                    set_timeout(
+                        move || set_toast_visible(false),
+                        std::time::Duration::from_secs(3)
+                    );
+                    
+                    Ok(())
+                }
+                Err(e) => Err(format!("Failed to create thread: {}", e))
+            }
+        }
     });
 
     create_effect(move |_| {
-        if let Some(Ok(new_thread_id)) = create_new_thread.value().get() {
-            set_thread_id(new_thread_id);
+        if let Some(Err(error)) = create_new_thread.value().get() {
+            set_toast_message(error);
+            set_toast_visible(true);
+            
+            // Automatically hide the error toast after 5 seconds
+            set_timeout(
+                move || set_toast_visible(false),
+                std::time::Duration::from_secs(5)
+            );
         }
     });
 
     view! {
         <div class="w-full flex flex-col justify-start pt-2 pl-2 pr-2 h-full">
             <div class="flex flex-row items-center justify-between">
-                <button 
-                    class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900" 
+                <button
+                    class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
                     on:click=move |_| set_show_threads.update(|v| *v = !*v)
                 >
                     {move || if show_threads.get() { "hide threads" } else { "show threads" }}
@@ -50,36 +77,40 @@ pub fn WritersRoom() -> impl IntoView {
                     "mew"
                 </button>
                 <select
-                    class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900" 
+                    class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
                     on:change=handle_model_change
                 >
                     <option value="claude-3-haiku-20240307">"claude-3-haiku"</option>
                     <option value="claude-3-sonnet-20240229">"claude-3-sonnet"</option>
                     <option value="claude-3-opus-20240229">"claude-3-opus"</option>
                     <option value="claude-3-5-sonnet-20240620">"claude-3-5-sonnet"</option>
-                    <option value="gpt-4o-mini" selected="selected">"gpt-4o-mini"</option>
+                    <option value="gpt-4o-mini" selected="selected">
+                        "gpt-4o-mini"
+                    </option>
                     <option value="gpt-4o">"gpt-4o"</option>
                     <option value="gpt-4-turbo">"gpt-4-turbo"</option>
                 </select>
             </div>
             <div class="flex flex-row items-start justify-between">
-                <div class={move || if show_threads.get() { "block" } else { "hidden" }}>
+                <div class=move || if show_threads.get() { "block" } else { "hidden" }>
                     <ThreadList
                         current_thread_id=thread_id
                         set_current_thread_id=set_thread_id
-                        _lab=lab // might use later 
-
+                        // might use later
+                        _lab=lab
                     />
+
                 </div>
                 <div class="w-full flex flex-col content-end justify-between h-[calc(90vh-10px)]">
-                    <MessageList
-                        current_thread_id=thread_id
-                    />
-                    <Chat 
-                        thread_id=thread_id 
-                        model=model
-                        lab=lab
-                    />
+                    <MessageList current_thread_id=thread_id/>
+                    <div class="relative">
+                        <Toast
+                            message=toast_message
+                            visible=toast_visible
+                            on_close=move |_| set_toast_visible(false)
+                        />
+                        <Chat thread_id=thread_id model=model lab=lab/>
+                    </div>
                 </div>
             </div>
         </div>

@@ -152,51 +152,77 @@ pub fn Channels(
             <h1 class="text-2xl ib text-salmon-300 text-center mb-4">"channels"</h1>
             <input
                 type="text"
-                placeholder="grep channels"
+                placeholder="grep channel, bio"
                 on:input=move |ev| set_search_query(event_target_value(&ev))
                 class="w-full p-2 mb-4 bg-teal-700 text-aqua-500"
             />
-            {move || error_message().map(|err| view! {
-                <p class="text-salmon-800">{err}</p>
-            })}
+            {move || error_message().map(|err| view! { <p class="text-salmon-800">{err}</p> })}
+
             <ul class="channels-list flex flex-col">
                 {move || {
-                    filtered_channels().iter().map(|channel| {
-                        let fid = channel.leadFid;
-                        let channel_id = channel.id.clone();
-                        view! {
-                            <button 
-                                class="channel-item bg-teal-800 p-2 shadow hover:bg-teal-900 transition duration-0 group relative"
-                                on:click=move |_| set_active_channel(channel_id.clone())
-                            >
-                                <div class="channel-item-info-container flex flex-col items-start">
-                                    <div class="channel-avatar-chip flex flex-row items-center justify-between text-center space-x-4">
-                                        <img src={channel.imageUrl.clone()} alt={channel.id.clone()} class="w-10 h-10 rounded-full"/>
-                                        <div class="title-v-stack flex flex-col items-start">
-                                            <a href={channel.url.clone()} class="ib text-base text-pistachio-500 hover:text-pistachio-500 pb-2">{&channel.id}</a>
-                                            {move || match lead_usernames.get().get(&fid) {
-                                                Some(username) => view! {
-                                                    <p class="ib text-xs text-mint-700">{username}</p>
-                                                },
-                                                None => view! {
-                                                    <p class="ib text-xs text-mint-700">"chill"</p>
-                                                },
-                                            }}
+                    filtered_channels()
+                        .iter()
+                        .map(|channel| {
+                            let fid = channel.leadFid;
+                            let channel_id = channel.id.clone();
+                            view! {
+                                <button
+                                    class="channel-item bg-teal-800 p-2 shadow hover:bg-teal-900 transition duration-0 group relative"
+                                    on:click=move |_| set_active_channel(channel_id.clone())
+                                >
+                                    <div class="channel-item-info-container flex flex-col items-start">
+                                        <div class="channel-avatar-chip flex flex-row items-center justify-between text-center space-x-4">
+                                            <img
+                                                src=channel.imageUrl.clone()
+                                                alt=channel.id.clone()
+                                                class="w-10 h-10 rounded-full"
+                                            />
+                                            <div class="title-v-stack flex flex-col items-start">
+                                                <a
+                                                    href=channel.url.clone()
+                                                    class="ib text-base text-pistachio-500 hover:text-pistachio-500 pb-2"
+                                                >
+                                                    {&channel.id}
+                                                </a>
+                                                {move || match lead_usernames.get().get(&fid) {
+                                                    Some(username) => {
+                                                        view! { <p class="ib text-xs text-mint-700">{username}</p> }
+                                                    }
+                                                    None => {
+                                                        view! { <p class="ib text-xs text-mint-700">"chill"</p> }
+                                                    }
+                                                }}
+
+                                            </div>
+                                        </div>
+                                        <div class="description-v-stack hidden group-hover:flex flex-col items-start justify-center text-left mt-4 w-full absolute top-0 left-1/2 ml-2 z-50 bg-teal-700 p-4 shadow-lg">
+                                            <p class="ir text-pistachio-200 text-xs w-full">
+                                                {&channel.description}
+                                            </p>
+                                            {channel
+                                                .moderatorFid
+                                                .map(|fid| {
+                                                    view! {
+                                                        <p class="ib text-sm text-mint-700">
+                                                            {"moderator fid: "} {fid}
+                                                        </p>
+                                                    }
+                                                })}
+
+                                            <p class="ir text-xs text-salmon-400">
+                                                {"created: "} {format_date(channel.createdAt)}
+                                            </p>
+                                            <p class="ir text-xs text-mint-500">
+                                                {"followers: "} {channel.followerCount}
+                                            </p>
                                         </div>
                                     </div>
-                                    <div class="description-v-stack hidden group-hover:flex flex-col items-start justify-center text-left mt-4 w-full absolute top-0 left-1/2 ml-2 z-50 bg-teal-700 p-4 shadow-lg">
-                                        <p class="ir text-pistachio-200 text-xs w-full">{&channel.description}</p>
-                                        {channel.moderatorFid.map(|fid| view! {
-                                            <p class="ib text-sm text-mint-700">{"moderator fid: "}{fid}</p>
-                                        })}
-                                        <p class="ir text-xs text-salmon-400">{"created: "}{format_date(channel.createdAt)}</p>
-                                        <p class="ir text-xs text-mint-500">{"followers: "}{channel.followerCount}</p>
-                                    </div>
-                                </div>
-                            </button>
-                        }
-                    }).collect::<Vec<_>>()
+                                </button>
+                            }
+                        })
+                        .collect::<Vec<_>>()
                 }}
+
             </ul>
         </div>
     }
