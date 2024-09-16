@@ -71,23 +71,26 @@ pub fn WritersRoom() -> impl IntoView {
     view! {
         <div class="w-full flex flex-col justify-start pt-2 pl-2 pr-2 h-full">
             <div class="flex flex-row items-center justify-between">
-                <button
-                    class="self-start ib text-xs md:text-sm 
-                    text-gray-800 hover:text-gray-900 p-2 border-2 
-                    bg-teal-800 hover:bg-teal-900 
-                    border-gray-700 hover:border-gray-900"
-                    on:click=move |_| set_show_threads.update(|v| *v = !*v)
-                >
-                    {move || if show_threads.get() { "hide threads" } else { "show threads" }}
-                </button>
-                <button
-                    class="self-start ib text-xs md:text-sm text-mint-700 
-                    hover:text-aqua-400 bg-teal-800 hover:bg-teal-900 
-                    border-gray-700 hover:border-gray-900"
-                    on:click=move |_| create_new_thread.dispatch(())
-                >
-                    "mew"
-                </button>
+                <div class="flex flex-row items-center justify-center space-x-4">
+                    <button
+                        class="self-start ib text-xs md:text-sm 
+                        text-gray-800 hover:text-gray-900 p-2 border-2 
+                        bg-teal-800 hover:bg-teal-900 
+                        border-gray-700 hover:border-gray-900"
+                        on:click=move |_| set_show_threads.update(|v| *v = !*v)
+                    >
+                        {move || if show_threads.get() { "hide threads" } else { "show threads" }}
+                    </button>
+                    <button
+                        class="ib text-xs md:text-sm 
+                        text-mint-700 hover:text-aqua-400 
+                        bg-teal-800 hover:bg-teal-900 
+                        border-gray-700 hover:border-gray-900"
+                        on:click=move |_| create_new_thread.dispatch(())
+                    >
+                        {"mew"}
+                    </button>
+                </div>
                 <select
                     class="self-start ib text-xs md:text-sm 
                     text-gray-800 hover:text-gray-900 p-2 border-2 
