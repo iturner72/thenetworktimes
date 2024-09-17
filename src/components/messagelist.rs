@@ -38,7 +38,7 @@ pub fn MessageList(
                             if current_thread_id.get().is_empty() {
                                 true
                             } else {
-                                message.thread_id == Some(current_thread_id.get())
+                                message.thread_id == current_thread_id.get()
                             }
                         })
                 }

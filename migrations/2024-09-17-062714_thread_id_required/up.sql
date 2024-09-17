@@ -1,0 +1,2 @@
+ALTER TABLE messages
+ALTER COLUMN thread_id SET NOT NULL;

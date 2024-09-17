@@ -275,7 +275,7 @@ pub fn Chat(
             let is_llm = false;
 
             let new_message_view = NewMessageView {
-                thread_id: Some(current_thread_id.clone()),
+                thread_id: current_thread_id.clone(),
                 content: Some(message_value.clone()),
                 role: role.to_string(),
                 active_model: selected_model.clone(),
@@ -303,7 +303,7 @@ pub fn Chat(
                                 let llm_content_value = llm_content.get();
                                 let is_llm = true;
                                 let new_message_view = NewMessageView {
-                                    thread_id: Some(thread_id().clone()),
+                                    thread_id: thread_id().clone(),
                                     content: Some(llm_content_value),
                                     role: "assistant".to_string(),
                                     active_model: model().clone(),
@@ -368,30 +368,42 @@ pub fn Chat(
     view! {
         <div class="flex flex-col items-center justify-between pb-2 md:pb-4">
             <div class="w-10/12 md:w-7/12 h-[calc(0vh-10px)] overflow-y-auto flex flex-col-reverse pb-0 md:pb-12">
-                <Suspense fallback=|| view! { <p class="ir text-base text-seafoam-100">"loading..."</p> }>
+                <Suspense fallback=|| {
+                    view! { <p class="ir text-base text-seafoam-100">"loading..."</p> }
+                }>
                     {move || {
                         view! {
                             <p class="ir text-gray-700 whitespace-pre-wrap">{response.get()}</p>
                         }
                     }}
+
                 </Suspense>
             </div>
             <div class="flex flex-row justify-center space-x-4 w-6/12 md:w-7/12">
                 <textarea
                     class="ir text-sm text-gray-600 bg-teal-800 w-full h-8 md:h-12 p-2 text-wrap"
                     value=message
-                    on:input={move |event| {
+                    on:input=move |event| {
                         set_message(event_target_value(&event));
                         let target = event.target().unwrap();
                         let style = target.unchecked_ref::<HtmlElement>().style();
                         style.set_property("height", "auto").unwrap();
-                        style.set_property("height", &format!("{}px", target.unchecked_ref::<HtmlElement>().scroll_height())).unwrap();
-                    }}
-                ></textarea>
+                        style
+                            .set_property(
+                                "height",
+                                &format!(
+                                    "{}px",
+                                    target.unchecked_ref::<HtmlElement>().scroll_height(),
+                                ),
+                            )
+                            .unwrap();
+                    }
+                >
+                </textarea>
                 <button
                     class="ib text-gray-700 hover:text-teal-400 text-xs md:text-lg w-1/6"
                     on:click=send_message_action
-                    disabled={move || is_sending.get()}
+                    disabled=move || is_sending.get()
                 >
                     {move || if is_sending.get() { "yapping..." } else { "yap" }}
                 </button>
@@ -444,17 +456,16 @@ pub async fn create_message(new_message_view: NewMessageView, is_llm: bool) -> R
         let new_message: NewMessage = new_message_view.into();
 
         if !is_llm {
-            if let Some(thread_id) = &new_message.thread_id {
-                if threads::table.find(thread_id).first::<Thread>(conn).optional()?.is_none() {
-                    let new_thread = Thread {
-                        id: thread_id.clone(),
-                        created_at: None,
-                        updated_at: None,
-                    };
-                    diesel::insert_into(threads::table)
-                        .values(&new_thread)
-                        .execute(conn)?;
-                }
+            let thread_id = &new_message.thread_id;
+            if threads::table.find(thread_id).first::<Thread>(conn).optional()?.is_none() {
+                let new_thread = Thread {
+                    id: thread_id.clone(),
+                    created_at: None,
+                    updated_at: None,
+                };
+                diesel::insert_into(threads::table)
+                    .values(&new_thread)
+                    .execute(conn)?;
             }
         }
 

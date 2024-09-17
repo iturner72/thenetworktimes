@@ -1,6 +1,6 @@
 use cfg_if::cfg_if;
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ThreadView {
@@ -12,7 +12,7 @@ pub struct ThreadView {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MessageView {
     pub id: i32,
-    pub thread_id: Option<String>,
+    pub thread_id: String,
     pub content: Option<String>,
     pub role: String,
     pub active_model: String,
@@ -23,13 +23,12 @@ pub struct MessageView {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NewMessageView {
-    pub thread_id: Option<String>,
+    pub thread_id: String,
     pub content: Option<String>,
     pub role: String,
     pub active_model: String,
     pub active_lab: String,
 }
-
 
 cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::schema::*;
@@ -62,7 +61,7 @@ cfg_if! { if #[cfg(feature = "ssr")] {
     pub struct Message {
         pub id: i32,
         #[diesel(column_name = thread_id)]
-        pub thread_id: Option<String>,
+        pub thread_id: String,
         pub content: Option<String>,
         pub role: String,
         pub active_model: String,
@@ -90,7 +89,7 @@ cfg_if! { if #[cfg(feature = "ssr")] {
     #[derive(Debug, Insertable, Deserialize)]
     #[diesel(table_name = messages)]
     pub struct NewMessage {
-        pub thread_id: Option<String>,
+        pub thread_id: String,
         pub content: Option<String>,
         pub role: String,
         pub active_model: String,

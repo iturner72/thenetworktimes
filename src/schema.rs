@@ -1,3 +1,4 @@
+// @generated automatically by Diesel CLI.
 use cfg_if::cfg_if;
 cfg_if! {
 if #[cfg(feature = "ssr")] {
@@ -6,7 +7,7 @@ diesel::table! {
     messages (id) {
         id -> Int4,
         #[max_length = 255]
-        thread_id -> Nullable<Varchar>,
+        thread_id -> Varchar,
         content -> Nullable<Text>,
         role -> Varchar,
         active_model -> Varchar,

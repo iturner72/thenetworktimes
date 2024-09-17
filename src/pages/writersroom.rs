@@ -1,7 +1,7 @@
 use leptos::*;
 
 use crate::components::chat::Chat;
-use crate::components::threadlist::ThreadList;
+use crate::components::threadlist::{ThreadList, get_threads};
 use crate::components::messagelist::MessageList;
 use crate::components::toast::Toast;
 
@@ -13,6 +13,11 @@ pub fn WritersRoom() -> impl IntoView {
     let (thread_id, set_thread_id) = create_signal("0001".to_string());
     let (toast_visible, set_toast_visible) = create_signal(false);
     let (toast_message, set_toast_message) = create_signal(String::new());
+
+    let threads = create_resource(
+        || (),
+        |_| async move { get_threads().await }
+    );
 
     let handle_model_change = move |ev| {
         let value = event_target_value(&ev);
@@ -34,6 +39,9 @@ pub fn WritersRoom() -> impl IntoView {
                     set_thread_id(new_thread_id.clone());
                     set_toast_message(format!("New thread created: {}", new_thread_id));
                     set_toast_visible(true);
+
+                    // refetch threads to update thread list
+                    threads.refetch();
                     
                     // Automatically hide the toast after 3 seconds
                     set_timeout(
@@ -64,18 +72,20 @@ pub fn WritersRoom() -> impl IntoView {
     view! {
         <div class="w-full flex flex-col justify-start pt-2 pl-2 pr-2 h-full">
             <div class="flex flex-row items-center justify-between">
-                <button
-                    class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
-                    on:click=move |_| set_show_threads.update(|v| *v = !*v)
-                >
-                    {move || if show_threads.get() { "hide threads" } else { "show threads" }}
-                </button>
-                <button
-                    class="self-start ib text-xs md:text-sm text-mint-700 hover:text-aqua-400i bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
-                    on:click=move |_| create_new_thread.dispatch(())
-                >
-                    "mew"
-                </button>
+                <div class="flex flex-row items-center justify-center space-x-4">
+                    <button
+                        class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
+                        on:click=move |_| set_show_threads.update(|v| *v = !*v)
+                    >
+                        {move || if show_threads.get() { "hide threads" } else { "show threads" }}
+                    </button>
+                    <button
+                        class="ib text-xs md:text-sm text-mint-700 hover:text-aqua-400 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
+                        on:click=move |_| create_new_thread.dispatch(())
+                    >
+                        "mew"
+                    </button>
+                </div>
                 <select
                     class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
                     on:change=handle_model_change
@@ -92,18 +102,37 @@ pub fn WritersRoom() -> impl IntoView {
                 </select>
             </div>
             <div class="flex flex-row items-start justify-between">
-                <div class=move || if show_threads.get() { "block" } else { "hidden" }>
-                    <ThreadList
-                        current_thread_id=thread_id
-                        set_current_thread_id=set_thread_id
-                        // might use later
-                        _lab=lab
-                    />
+                <div class=move || {
+                    let base_class = "transition-all duration-300 ease-in-out overflow-hidden";
+                    if show_threads.get() {
+                        format!("{} max-w-xs w-full opacity-100", base_class)
+                    } else {
+                        format!("{} max-w-0 w-0 opacity-0", base_class)
+                    }
+                }>
+                    <Suspense fallback = move || view! { <p>"loading threads..."</p> }>
+                    {move || {
+                        threads.get().map(|thread_list| {
+                            match thread_list {
+                                Ok(_threads) => view! {
+                                    <div>
+                                        <ThreadList 
+                                            current_thread_id=thread_id 
+                                            set_current_thread_id=set_thread_id
+                                            _lab=lab // will use for filtering later
+                                        />
+                                    </div>
+                                },
+                                Err(_) => view! { <div>"error loading threads: {e}"</div>},
+                            }
+                        })
+                    }}
 
+                    </Suspense>
                 </div>
                 <div class="w-full flex flex-col content-end justify-between h-[calc(90vh-10px)]">
                     <MessageList current_thread_id=thread_id/>
-                    <div class="relative">
+                    <div class="relative text-mint-700">
                         <Toast
                             message=toast_message
                             visible=toast_visible

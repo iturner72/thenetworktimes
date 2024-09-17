@@ -27,7 +27,7 @@ cfg_if! {
             use crate::schema::{messages, threads};
 
             let new_message = NewMessage {
-                thread_id: Some(payload.thread_id.clone()),
+                thread_id: payload.thread_id.clone(),
                 content: Some(payload.content),
                 role: payload.role,
                 active_model: payload.active_model,
@@ -70,9 +70,9 @@ cfg_if! {
         }
 
         pub fn setup_database(database_url: &str) -> DbPool {
-            let manager = Manager::new(database_url, Runtime::Tokio1); 
+            let manager = Manager::new(database_url, Runtime::Tokio1);
             let pool = Pool::builder(manager)
-                .max_size(8) 
+                .max_size(8)
                 .build()
                 .expect("Failed to create pool.");
             pool
