@@ -32,7 +32,6 @@ pub fn WritersRoom() -> impl IntoView {
     };
 
     let create_new_thread = create_action(move |_: &()| {
-
         async move {
             match create_thread().await {
                 Ok(new_thread_id) => {
@@ -43,7 +42,7 @@ pub fn WritersRoom() -> impl IntoView {
                     // refetch threads to update thread list
                     threads.refetch();
                     
-                    // Automatically hide the toast after 3 seconds
+                    // hide toast after 3 seconds
                     set_timeout(
                         move || set_toast_visible(false),
                         std::time::Duration::from_secs(3)
@@ -61,7 +60,7 @@ pub fn WritersRoom() -> impl IntoView {
             set_toast_message(error);
             set_toast_visible(true);
             
-            // Automatically hide the error toast after 5 seconds
+            // hide the error toast after 5 seconds
             set_timeout(
                 move || set_toast_visible(false),
                 std::time::Duration::from_secs(5)
@@ -87,7 +86,10 @@ pub fn WritersRoom() -> impl IntoView {
                     </button>
                 </div>
                 <select
-                    class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
+                    class="self-start ib text-xs md:text-sm 
+                    text-gray-800 hover:text-gray-900 p-2 border-2 
+                    bg-teal-800 hover:bg-teal-900 
+                    border-gray-700 hover:border-gray-900"
                     on:change=handle_model_change
                 >
                     <option value="claude-3-haiku-20240307">"claude-3-haiku"</option>
@@ -123,7 +125,7 @@ pub fn WritersRoom() -> impl IntoView {
                                         />
                                     </div>
                                 },
-                                Err(_) => view! { <div>"error loading threads: {e}"</div>},
+                                Err(_) => view! { <div>"error loading threads: {e}"</div> },
                             }
                         })
                     }}
