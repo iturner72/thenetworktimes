@@ -10,36 +10,54 @@ extern "C" {
 #[component]
 pub fn MermaidDemo() -> impl IntoView {
     let diagram = r#"
-gitGraph
-   commit id: "Last common commit"
-   branch origin/siwf
-   commit id: "62e0f06"
-   commit id: "39feefb"
-   commit id: "c8a8d50"
-   commit id: "6cb4751"
-   branch siwf
-   commit id: "0f73e64"
-   commit id: "8e12a5c"
-   commit id: "1ad7c8b"
-   commit id: "4ac1113"
-   commit id: "70385e7"
-   commit id: "9eda3e8"
-   commit id: "1429ee3"
-   commit id: "24ac2db"
-   commit id: "70b1ef4"
-   commit id: "d3b40c2"
-   commit id: "afb615b"
-   commit id: "c89ef6f"
-   commit id: "849093c"
-   branch siwf-backup
-   commit id: "Backup point"
-   branch proposed-solution
-   checkout origin/siwf
-   merge siwf id: "Reset to origin/siwf"
-   commit id: "Cherry-pick 0f73e64"
-   commit id: "Cherry-pick 8e12a5c"
-   commit id: "..."
-   commit id: "Cherry-pick 849093c"
+        %%{init: { 
+          'theme': 'base',
+          'themeVariables': {
+            'git0': '#60608d',
+            'git1': '#fb5367',
+            'git2': '#00aaa8',
+            'git3': '#206d5f',
+            'git4': '#042f2e',
+            'git5': '#021312',
+            'gitBranchLabel0': '#ffffff',
+            'gitBranchLabel1': '#ffffff',
+            'gitBranchLabel2': '#ffffff',
+            'gitBranchLabel3': '#ffffff',
+            'gitBranchLabel4': '#ffffff',
+            'gitBranchLabel5': '#ffffff'
+          }
+        } }%%
+        
+        gitGraph
+           commit id: "Last common commit"
+           branch origin/siwf
+           commit id: "Initial SIWF setup"
+           commit id: "Merge from main"
+           commit id: "Working prototype"
+           commit id: "Context provider fix"
+           branch siwf
+           commit id: "Context cleanup"
+           commit id: "Add witnessing page"
+           commit id: "UI improvements"
+           commit id: "Add badges"
+           commit id: "Styling updates"
+           commit id: "Rename pages"
+           commit id: "Add pool to declarations"
+           commit id: "Add Coinbase wallet"
+           commit id: "Improve readability"
+           commit id: "Community declarations update"
+           commit id: "Init SIWF"
+           commit id: "Remove AuthKit provider"
+           commit id: "Farcaster hooks implementation"
+           branch siwf-backup
+           commit id: "Backup point"
+           branch proposed-solution
+           checkout origin/siwf
+           merge siwf id: "Reset to origin/siwf"
+           commit id: "Cherry-pick: Context cleanup"
+           commit id: "Cherry-pick: Add witnessing page"
+           commit id: "..."
+           commit id: "Cherry-pick: Farcaster hooks implementation"
     "#;
 
     let diagram_ref = create_node_ref::<html::Div>();
@@ -63,7 +81,7 @@ gitGraph
 
     view! {
         <div class="flex flex-col items-center text-purple-400 bg-black p-4">
-            <div>
+            <div class="w-10/12">
                 <h2 class="ib text-3xl mb-4">"mermaid"</h2>
                 <div _ref=diagram_ref id="mermaid-diagram" class="mermaid">
                     {diagram}
