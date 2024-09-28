@@ -10,50 +10,36 @@ extern "C" {
 #[component]
 pub fn MermaidDemo() -> impl IntoView {
     let diagram = r#"
-graph TD
-    subgraph Client1 ["Client 1"]
-        A1[User 1 Input] --> B1[EventSource]
-    end
-
-    subgraph Client2 ["Client 2"]
-        A2[User 2 Input] --> B2[EventSource]
-    end
-
-    subgraph Server ["Server (Leptos 0.6 or 0.7)"]
-        C[Axum SSE Handler]
-        D[Tokio Runtime]
-        E1[Tokio Task 1]
-        E2[Tokio Task 2]
-        F1[MPSC Channel 1]
-        F2[MPSC Channel 2]
-        G1[SseStream 1]
-        G2[SseStream 2]
-        H[AI Service]
-    end
-
-    B1 --> C
-    B2 --> C
-    C --> D
-    D --> E1
-    D --> E2
-    E1 --> F1
-    E2 --> F2
-    F1 --> G1
-    F2 --> G2
-    E1 --> H
-    E2 --> H
-    G1 --> B1
-    G2 --> B2
-
-    classDef client fill:#446784,stroke:#DCE9E6,stroke-width:2px,color:#DCE9E6;
-    classDef server fill:#206D5F,stroke:#DCE9E6,stroke-width:2px,color:#DCE9E6;
-    classDef channel fill:#715F58,stroke:#DCE9E6,stroke-width:2px,color:#DCE9E6;
-    classDef aiService fill:#00AAA8,stroke:#DCE9E6,stroke-width:2px,color:#DCE9E6;
-
-    class A1,A2,B1,B2 client;
-    class C,D,E1,E2,G1,G2 server;
-    class F1,F2 channel;
-    class H aiService;
+gitGraph
+   commit id: "Last common commit"
+   branch origin/siwf
+   commit id: "62e0f06"
+   commit id: "39feefb"
+   commit id: "c8a8d50"
+   commit id: "6cb4751"
+   branch siwf
+   commit id: "0f73e64"
+   commit id: "8e12a5c"
+   commit id: "1ad7c8b"
+   commit id: "4ac1113"
+   commit id: "70385e7"
+   commit id: "9eda3e8"
+   commit id: "1429ee3"
+   commit id: "24ac2db"
+   commit id: "70b1ef4"
+   commit id: "d3b40c2"
+   commit id: "afb615b"
+   commit id: "c89ef6f"
+   commit id: "849093c"
+   branch siwf-backup
+   commit id: "Backup point"
+   branch proposed-solution
+   checkout origin/siwf
+   merge siwf id: "Reset to origin/siwf"
+   commit id: "Cherry-pick 0f73e64"
+   commit id: "Cherry-pick 8e12a5c"
+   commit id: "..."
+   commit id: "Cherry-pick 849093c"
     "#;
 
     let diagram_ref = create_node_ref::<html::Div>();

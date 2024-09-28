@@ -11,6 +11,9 @@ pkg
 .env
 style/output.css
 
+# mac
+*.DS_Store
+
 # node e2e test tools and outputs
 node_modules/
 test-results/
