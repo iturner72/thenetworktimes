@@ -37,7 +37,7 @@ pub fn App() -> impl IntoView {
 
         <Script type_="module">
             r#"
-            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
             
             console.log('Initializing Mermaid');
             mermaid.initialize({ 
