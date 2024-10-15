@@ -24,12 +24,12 @@ pub fn CodeDemo() -> impl IntoView {
     let python_code = "def greet(name):\n    print(f\"Hello, {name}!\")\n\ngreet(\"World\")";
 
     view! {
-        <div class="flex justify-center items-start min-h-screen pt-6">
-            <div class="code-demo-container bg-gray-900 border-2 border-gray-800 flex flex-col items-center justify-center text-wenge-300 p-2 w-auto max-w-4/12 space-y-2">
-                <h1 class="ib text-2xl">"highlight js demo"</h1>
-                <h2>"Rust Example"</h2>
+        <div class="flex justify-center items-start min-h-screen pt-6 bg-rich-black-100">
+            <div class="code-demo-container bg-rich-black-500 border-2 border-rich-black-400 flex flex-col items-center justify-center text-celestial-blue-300 p-2 w-auto max-w-4/12 space-y-2">
+                <h1 class="ib text-2xl text-ucla-blue-300">"highlight js demo"</h1>
+                <h2 class="text-tyrian-purple-300">"Rust Example"</h2>
                 <CodeBlock code=rust_code language="rust"/>
-                <h2>"Python Example"</h2>
+                <h2 class="text-tyrian-purple-300">"Python Example"</h2>
                 <CodeBlock code=python_code language="python"/>
             </div>
         </div>
@@ -83,8 +83,8 @@ pub fn CodeBlock(#[prop(into)] code: String, #[prop(into)] language: String) -> 
     });
 
     view! {
-        <pre class="code-block-container flex flex-col items-start bg-wenge-900 text-left w-auto">
-            <code _ref=code_ref class={format!("border-2 border-mint-800 language-{} text-sm", language)}>
+        <pre class="code-block-container flex flex-col items-start bg-rich-black-500 text-left w-auto">
+            <code _ref=code_ref class={format!("border-2 border-celestial-blue-800 language-{} text-sm", language)}>
                 {move || words.0().iter().map(|(word, highlighted)| {
                     view! {
                         <span class={if *highlighted { "highlighted" } else { "" }}>

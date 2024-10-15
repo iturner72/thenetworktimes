@@ -74,22 +74,21 @@ pub fn Profile() -> impl IntoView {
     );
 
     view! {
-        <Suspense fallback=|| view! { <div class="text-3xl text-mint-700">"loading..."</div> }>
+        <Suspense fallback=|| view! { <div class="text-3xl text-ucla-blue-700">"loading..."</div> }>
             {move || match user_data.get() {
-                None => view! { <div class="text-pistachio-500">"loading..."</div> },
+                None => view! { <div class="text-celestial-blue-500">"loading..."</div> },
                 Some(Ok((username, pfp, bio))) => view! {
                     <div class="flex flex-col items-center justify-center pt-4">
                         <div class="flex flex-row items-center justify-center space-x-4">
                             <img src={pfp.data.user_data_body.value} alt="pfp" class="profile-pic w-12 h-12 rounded-full" />
-                            <span class="ib text-base text-mint-700">{"@"}{username.data.user_data_body.value}</span>
+                            <span class="ib text-base text-ucla-blue-700">{"@"}{username.data.user_data_body.value}</span>
                         </div>
-                        <span class="ib text-lg text-gray-600 pt-4">{bio.data.user_data_body.value}</span>
+                        <span class="ib text-lg text-dark-purple-600 pt-4">{bio.data.user_data_body.value}</span>
                     </div>
                 },
-                Some(Err(_)) => view! { <div class="text-pistachio-500">"Error loading user data"</div> },
+                Some(Err(_)) => view! { <div class="text-celestial-blue-500">"Error loading user data"</div> },
             }}
         </Suspense>
     }
-
-
 }
+

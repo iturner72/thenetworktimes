@@ -54,12 +54,12 @@ pub fn CastList(
 
     view! {
         <div class="channel-casts-container w-11/12 lg:w-8/12 xl:w-5/12 mx-auto">
-            <h2 class="text-2xl ib text-gray-700 hover:text-gray-900 pb-6">
+            <h2 class="text-2xl ib text-ucla-blue-500 hover:text-ucla-blue-700 pb-6">
                 <a href={move || format!("https://warpcast.com/~/channel/{}", active_channel.get())} target="_blank" rel="noopener noreferrer">
                     {move || format!("/{}", active_channel.get())}
                 </a>
             </h2>
-            {move || error.get().map(|err| view! { <p class="text-red-500">{err}</p> })}
+            {move || error.get().map(|err| view! { <p class="text-tyrian-purple-500">{err}</p> })}
             <div class="cast-list">
                 <For
                     each=move || cast_list.get()
@@ -67,7 +67,8 @@ pub fn CastList(
                     children=move |cast| {
                         let index = cast_list.with(|list| list.iter().position(|c| c.hash == cast.hash).unwrap_or(0));
                         view! {
-                            <div class=move || format!("border-l border-r border-b last:border-b-0 border-seafoam-800 {} p-4 transition-colors duration-0 ease-in-out hover:bg-teal-800",
+                            <div class=move || format!(
+                                "border-l border-r border-b last:border-b-0 border-ucla-blue-300 {} p-4 transition-colors duration-300 ease-in-out hover:bg-rich-black-500 group",
                                 if index == 0 { "border-t" } else { "" }
                             )>
                                 <CastEntry 
@@ -82,20 +83,20 @@ pub fn CastList(
             <div>
                 {move || {
                     if is_loading.get() {
-                        view! { <div><p class="text-mint-700">"loading..."</p></div> }
+                        view! { <div><p class="text-ucla-blue-500">"loading..."</p></div> }
                     } else if has_more.get() {
                         view! {
                             <div>
                                 <button
                                     on:click=load_more
-                                    class="alumni-sans-regular mt-4 px-4 py-2 bg-stone-700 text-white hover:bg-stone-600"
+                                    class="alumni-sans-regular mt-4 px-4 py-2 bg-ucla-blue-600 text-white hover:bg-ucla-blue-700 transition-colors duration-300"
                                 >
                                     "load more"
                                 </button>
                             </div>
                         }
                     } else {
-                        view! { <div><p class="text-indigo-300">"no more casts to load."</p></div> }
+                        view! { <div><p class="text-celestial-blue-300">"no more casts to load."</p></div> }
                     }
                 }}
             </div>

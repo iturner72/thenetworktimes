@@ -56,11 +56,11 @@ pub fn MessageList(
                         )>
                             <button
                                 class=format!(
-                                    "message-item border-2 p-2 hover:border-teal-800 bg-teal-800 hover:bg-teal-900 transition duration-0 group {}",
+                                    "message-item border-2 p-2 hover:border-ucla-blue-800 bg-ucla-blue-800 hover:bg-ucla-blue-900 transition duration-0 group {}",
                                     if message.role == "assistant" {
                                         "border-none bg-opacity-0 self-start"
                                     } else {
-                                        "border-teal-700 bg-teal-800 self-end"
+                                        "border-ucla-blue-700 bg-ucla-blue-800 self-end"
                                     },
                                 )
 
@@ -91,19 +91,19 @@ pub fn MessageList(
                                         src="anthropic_square_logo.webp"
                                         class="w-6 h-6 rounded-full"
                                     />
-                                    <p class="message-content ir text-base text-gray-700 hover:text-teal-400">
+                                    <p class="message-content ir text-base text-dark-purple-700 hover:text-celestial-blue-400">
                                         {message.content.clone()}
                                     </p>
                                 </div>
                                 <div class="info-for-nerds flex flex-row justify-between space-x-12 pt-8 hidden">
                                     <div class="ai-info flex flex-col space-y-1">
-                                        <p class="message-thread_id ir text-xs text-gray-800 hover:text-gray-600">
+                                        <p class="message-thread_id ir text-xs text-dark-purple-800 hover:text-dark-purple-600">
                                             thread id: {message.thread_id.clone()}
                                         </p>
-                                        <p class="message-id ir text-xs text-gray-800 hover:text-gray-600">
+                                        <p class="message-id ir text-xs text-dark-purple-800 hover:text-dark-purple-600">
                                             message id: {message.id}
                                         </p>
-                                        <p class="message-created_at ir text-xs text-gray-900 hover:text-gray-700">
+                                        <p class="message-created_at ir text-xs text-dark-purple-900 hover:text-dark-purple-700">
                                             {message
                                                 .created_at
                                                 .map(|dt| dt.format("%b %d, %I:%M %p").to_string())
@@ -111,13 +111,13 @@ pub fn MessageList(
                                         </p>
                                     </div>
                                     <div class="message-info flex flex-col space-y-1">
-                                        <p class="message-role ir text-xs text-gray-600 hover:text-salmon-400">
+                                        <p class="message-role ir text-xs text-dark-purple-600 hover:text-tyrian-purple-400">
                                             role: {message.role.clone()}
                                         </p>
-                                        <p class="message-active_lab ir text-xs text-aqua-700 hover:text-aqua-400">
+                                        <p class="message-active_lab ir text-xs text-celestial-blue-700 hover:text-celestial-blue-400">
                                             lab: {message.active_lab.clone()}
                                         </p>
-                                        <p class="message-active_model ib text-xs text-mint-600 hover:text-mint-700">
+                                        <p class="message-active_model ib text-xs text-ucla-blue-600 hover:text-ucla-blue-700">
                                             model: {message.active_model.clone()}
                                         </p>
                                     </div>

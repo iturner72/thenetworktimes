@@ -73,13 +73,13 @@ pub fn WritersRoom() -> impl IntoView {
             <div class="flex flex-row items-center justify-between">
                 <div class="flex flex-row items-center justify-center space-x-4">
                     <button
-                        class="self-start ib text-xs md:text-sm text-gray-800 hover:text-gray-900 p-2 border-2 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
+                        class="self-start ib text-xs md:text-sm text-dark-purple-800 hover:text-dark-purple-900 p-2 border-2 bg-ucla-blue-800 hover:bg-ucla-blue-900 border-dark-purple-700 hover:border-dark-purple-900"
                         on:click=move |_| set_show_threads.update(|v| *v = !*v)
                     >
                         {move || if show_threads.get() { "hide threads" } else { "show threads" }}
                     </button>
                     <button
-                        class="ib text-xs md:text-sm text-mint-700 hover:text-aqua-400 bg-teal-800 hover:bg-teal-900 border-gray-700 hover:border-gray-900"
+                        class="ib text-xs md:text-sm text-ucla-blue-700 hover:text-celestial-blue-400 bg-ucla-blue-800 hover:bg-ucla-blue-900 border-dark-purple-700 hover:border-dark-purple-900"
                         on:click=move |_| create_new_thread.dispatch(())
                     >
                         "mew"
@@ -87,9 +87,9 @@ pub fn WritersRoom() -> impl IntoView {
                 </div>
                 <select
                     class="self-start ib text-xs md:text-sm 
-                    text-gray-800 hover:text-gray-900 p-2 border-2 
-                    bg-teal-800 hover:bg-teal-900 
-                    border-gray-700 hover:border-gray-900"
+                    text-dark-purple-800 hover:text-dark-purple-900 p-2 border-2 
+                    bg-ucla-blue-800 hover:bg-ucla-blue-900 
+                    border-dark-purple-700 hover:border-dark-purple-900"
                     on:change=handle_model_change
                 >
                     <option value="claude-3-haiku-20240307">"claude-3-haiku"</option>

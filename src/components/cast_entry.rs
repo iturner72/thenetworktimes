@@ -101,13 +101,12 @@ pub fn CastEntry(
     };
 
     view! {
-        <div class="cast-entry" node_ref=element_ref>
+        <div class="cast-entry group transition-colors duration-300 ease-in-out" node_ref=element_ref>
             {move || {
                 match user_data.get() {
                     Some((username, pfp)) => {
                         view! {
                             <div class="user-info flex flex-row items-center justify-start space-x-2">
-
                                 <A href=format!("/profile/{}", cast.data.fid)>
                                     <img
                                         src=pfp
@@ -116,7 +115,7 @@ pub fn CastEntry(
                                     />
                                 </A>
                                 <A href=format!("/profile/{}", cast.data.fid)>
-                                    <span class="username ib text-mint-700">{username}</span>
+                                    <span class="username ib text-ucla-blue-500 group-hover:text-white">{username}</span>
                                 </A>
                             </div>
                         }
@@ -124,24 +123,24 @@ pub fn CastEntry(
                     None => {
                         view! {
                             <div class="user-info-placeholder">
-                                <div class="w-12 h-12 bg-aqua-800 rounded-full"></div>
-                                <span class="username-placeholder bg-aqua-800 w-20 h-4"></span>
+                                <div class="w-12 h-12 bg-ucla-blue-800 rounded-full"></div>
+                                <span class="username-placeholder bg-ucla-blue-800 w-20 h-4"></span>
                             </div>
                         }
                     }
                 }
             }}
-
+    
             <div class="cast-content flex flex-col items-start pl-12">
                 <Suspense fallback=move || {
-                    view! { <p class="pt-2 ib text-mint-700">"loading..."</p> }
+                    view! { <p class="pt-2 ib text-ucla-blue-500 group-hover:text-white">"loading..."</p> }
                 }>
                     {move || {
                         processed_content
                             .get()
                             .map(|parts| {
                                 view! {
-                                    <p class="ir text-md text-pistachio-200">
+                                    <p class="ir text-md text-ucla-blue-500 group-hover:text-white">
                                         {parts
                                             .into_iter()
                                             .map(|part| {
@@ -151,7 +150,7 @@ pub fn CastEntry(
                                                             href=part.clone()
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            class="text-blue-400 hover:underline"
+                                                            class="text-celestial-blue-400 hover:text-celestial-blue-200 group-hover:text-celestial-blue-100"
                                                         >
                                                             {part}
                                                         </a>
@@ -166,9 +165,8 @@ pub fn CastEntry(
                                 }
                             })
                     }}
-
                 </Suspense>
-
+    
                 {move || {
                     cast_add_body
                         .get()
@@ -187,7 +185,7 @@ pub fn CastEntry(
                                                     <img
                                                         src=url.clone()
                                                         alt="cast image"
-                                                        class="mt-2 max-w-sm h-auto rounded-lg cursor-pointer"
+                                                        class="mt-2 max-w-sm h-auto rounded-lg cursor-pointer transition-transform duration-300 hover:scale-105"
                                                         on:click=move |_| open_modal(url_clone.clone())
                                                     />
                                                 }
@@ -197,17 +195,16 @@ pub fn CastEntry(
                             )
                         })
                 }}
-
             </div>
-
+    
             {move || {
                 if show_modal.get() {
                     view! {
-                        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div class="bg-gray-800 p-4 rounded-lg max-w-auto max-h-screen overflow-auto">
+                        <div class="fixed inset-0 bg-rich-black-500 bg-opacity-75 flex items-center justify-center z-50">
+                            <div class="bg-ucla-blue-900 p-4 rounded-lg max-w-auto max-h-screen overflow-auto">
                                 <ImageView url=modal_image_url.get().unwrap_or_default()/>
                                 <button
-                                    class="mt-4 px-4 py-2 bg-aqua-800 text-gray-500 hover:bg-gray-300"
+                                    class="mt-4 px-4 py-2 bg-celestial-blue-600 text-white hover:bg-celestial-blue-700 transition-colors duration-300"
                                     on:click=close_modal
                                 >
                                     "Close"
@@ -219,7 +216,6 @@ pub fn CastEntry(
                     view! { <div></div> }
                 }
             }}
-
         </div>
     }
 }

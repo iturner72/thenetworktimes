@@ -149,15 +149,15 @@ pub fn Channels(
 
     view! {
         <div class="channels-component-view w-7/12 md:w-3/12 xl:w-2/12 p-2 mx-auto">
-            <h1 class="text-2xl ib text-salmon-300 text-center mb-4">"channels"</h1>
+            <h1 class="text-2xl ib text-tyrian-purple-300 text-center mb-4">"channels"</h1>
             <input
                 type="text"
                 placeholder="grep channel, bio"
                 on:input=move |ev| set_search_query(event_target_value(&ev))
-                class="w-full p-2 mb-4 bg-teal-700 text-aqua-500"
+                class="w-full p-2 mb-4 bg-ucla-blue-700 text-celestial-blue-500"
             />
-            {move || error_message().map(|err| view! { <p class="text-salmon-800">{err}</p> })}
-
+            {move || error_message().map(|err| view! { <p class="text-tyrian-purple-800">{err}</p> })}
+    
             <ul class="channels-list flex flex-col">
                 {move || {
                     filtered_channels()
@@ -167,7 +167,7 @@ pub fn Channels(
                             let channel_id = channel.id.clone();
                             view! {
                                 <button
-                                    class="channel-item bg-teal-800 p-2 shadow hover:bg-teal-900 transition duration-0 group relative"
+                                    class="channel-item bg-ucla-blue-800 p-2 shadow hover:bg-ucla-blue-900 transition duration-0 group relative"
                                     on:click=move |_| set_active_channel(channel_id.clone())
                                 >
                                     <div class="channel-item-info-container flex flex-col items-start">
@@ -180,39 +180,37 @@ pub fn Channels(
                                             <div class="title-v-stack flex flex-col items-start">
                                                 <a
                                                     href=channel.url.clone()
-                                                    class="ib text-base text-pistachio-500 hover:text-pistachio-500 pb-2"
+                                                    class="ib text-base text-celestial-blue-500 hover:text-celestial-blue-500 pb-2"
                                                 >
                                                     {&channel.id}
                                                 </a>
                                                 {move || match lead_usernames.get().get(&fid) {
                                                     Some(username) => {
-                                                        view! { <p class="ib text-xs text-mint-700">{username}</p> }
+                                                        view! { <p class="ib text-xs text-ucla-blue-700">{username}</p> }
                                                     }
                                                     None => {
-                                                        view! { <p class="ib text-xs text-mint-700">"chill"</p> }
+                                                        view! { <p class="ib text-xs text-ucla-blue-700">"chill"</p> }
                                                     }
                                                 }}
-
                                             </div>
                                         </div>
-                                        <div class="description-v-stack hidden group-hover:flex flex-col items-start justify-center text-left mt-4 w-full absolute top-0 left-1/2 ml-2 z-50 bg-teal-700 p-4 shadow-lg">
-                                            <p class="ir text-pistachio-200 text-xs w-full">
+                                        <div class="description-v-stack hidden group-hover:flex flex-col items-start justify-center text-left mt-4 w-full absolute top-0 left-1/2 ml-2 z-50 bg-ucla-blue-700 p-4 shadow-lg">
+                                            <p class="ir text-celestial-blue-200 text-xs w-full">
                                                 {&channel.description}
                                             </p>
                                             {channel
                                                 .moderatorFid
                                                 .map(|fid| {
                                                     view! {
-                                                        <p class="ib text-sm text-mint-700">
+                                                        <p class="ib text-sm text-ucla-blue-700">
                                                             {"moderator fid: "} {fid}
                                                         </p>
                                                     }
                                                 })}
-
-                                            <p class="ir text-xs text-salmon-400">
+                                            <p class="ir text-xs text-tyrian-purple-400">
                                                 {"created: "} {format_date(channel.createdAt)}
                                             </p>
-                                            <p class="ir text-xs text-mint-500">
+                                            <p class="ir text-xs text-ucla-blue-500">
                                                 {"followers: "} {channel.followerCount}
                                             </p>
                                         </div>
@@ -222,7 +220,6 @@ pub fn Channels(
                         })
                         .collect::<Vec<_>>()
                 }}
-
             </ul>
         </div>
     }
