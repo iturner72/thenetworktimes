@@ -16,12 +16,12 @@ pub fn Toast(
 
     view! {
         <div
-            class="fixed bottom-4 right-4 bg-teal-700 text-mint-100 px-4 py-2 rounded shadow-lg transition-opacity duration-300"
+            class="fixed bottom-4 right-4 bg-rich-black-500 text-dark-purple-800 px-4 py-2 rounded shadow-lg transition-opacity duration-300"
             class=opacity_class
         >
             {message}
             <button
-                class="ml-2 text-mint-300 hover:text-mint-100"
+                class="ml-2 text-dark-purple-700 hover:text-dark-purple-800"
                 on:click=move |_| leptos::Callable::call(&on_close, ())
             >
                 "×"

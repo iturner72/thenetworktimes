@@ -134,7 +134,7 @@ pub fn WritersRoom() -> impl IntoView {
                 </div>
                 <div class="w-full flex flex-col content-end justify-between h-[calc(90vh-10px)]">
                     <MessageList current_thread_id=thread_id/>
-                    <div class="relative text-mint-700">
+                    <div class="relative text-rich-black-700">
                         <Toast
                             message=toast_message
                             visible=toast_visible
