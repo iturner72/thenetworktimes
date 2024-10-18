@@ -91,6 +91,7 @@ pub fn App() -> impl IntoView {
             }
             .into_view()
         }>
+            <body class="bg-white dark:bg-catppuccin-base text-gray-900 dark:text-catppuccin-text">
             <nav>
                 <Navbar/>
             </nav>
@@ -105,6 +106,7 @@ pub fn App() -> impl IntoView {
                     <Route path="mermaiddemo" view=MermaidDemo/>
                 </Routes>
             </main>
+            </body>
         </Router>
     }
 }

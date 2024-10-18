@@ -9,3 +9,4 @@ pub mod navbar;
 pub mod profile;
 pub mod threadlist;
 pub mod toast;
+pub mod dark_mode_toggle;

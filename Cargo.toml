@@ -42,7 +42,7 @@ uuid = { version = "1.8.0", features = ["v4"], optional = true }
 urlencoding = "2.1.2"
 url = "2.2.2"
 wasm-bindgen = "=0.2.93"
-web-sys = { version = "0.3.70", features = ["CustomEvent", "CustomEventInit", "IntersectionObserver", "IntersectionObserverEntry", "IntersectionObserverInit"], optional = false }
+web-sys = { version = "0.3.70", features = ["Storage", "Window", "Document", "Element", "DomTokenList", "CustomEvent", "CustomEventInit", "IntersectionObserver", "IntersectionObserverEntry", "IntersectionObserverInit"], optional = false }
 thiserror = "1"
 tracing = { version = "0.1", optional = true }
 http = "1"
