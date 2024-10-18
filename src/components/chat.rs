@@ -365,54 +365,54 @@ pub fn Chat(
         });
     };
 
-    view! {
-        <div class="flex flex-col items-center justify-between pb-2 md:pb-4">
-            <div class="w-10/12 md:w-7/12 h-[calc(0vh-10px)] overflow-y-auto flex flex-col-reverse pb-0 md:pb-12">
-                <Suspense fallback=|| {
-                    view! { <p class="ir text-base text-celestial-blue-300">"loading..."</p> }
-                }>
-                    {move || {
-                        view! {
-                            <p class="ir text-ucla-blue-600 whitespace-pre-wrap">{response.get()}</p>
-                        }
-                    }}
-                </Suspense>
-            </div>
-            <div class="flex flex-row justify-center space-x-4 w-6/12 md:w-7/12">
-                <textarea
-                    class="ir text-sm text-ucla-blue-100 bg-rich-black-500 w-full h-8 md:h-12 p-2 text-wrap
-                           border-2 border-ucla-blue-700 focus:border-celestial-blue-500 focus:outline-none
-                           transition duration-300 ease-in-out resize-none"
-                    value=message
-                    on:input=move |event| {
-                        set_message(event_target_value(&event));
-                        let target = event.target().unwrap();
-                        let style = target.unchecked_ref::<HtmlElement>().style();
-                        style.set_property("height", "auto").unwrap();
-                        style
-                            .set_property(
-                                "height",
-                                &format!(
-                                    "{}px",
-                                    target.unchecked_ref::<HtmlElement>().scroll_height(),
-                                ),
-                            )
-                            .unwrap();
+view! {
+    <div class="flex flex-col items-center justify-between pb-2 md:pb-4">
+        <div class="w-10/12 md:w-7/12 h-[calc(0vh-20px)] overflow-y-auto flex flex-col-reverse pb-0 md:pb-12">
+            <Suspense fallback=|| {
+                view! { <p class="ir text-base text-seafoam-500 dark:text-aqua-400">"loading..."</p> }
+            }>
+                {move || {
+                    view! {
+                        <p class="ir text-teal-700 dark:text-mint-300 whitespace-pre-wrap">{response.get()}</p>
                     }
-                >
-                </textarea>
-                <button
-                    class="ib text-celestial-blue-300 hover:text-white bg-ucla-blue-700 hover:bg-ucla-blue-800
-                           text-xs md:text-lg w-1/6 p-2 rounded transition duration-300 ease-in-out
-                           disabled:bg-ucla-blue-900 disabled:text-ucla-blue-300 disabled:cursor-not-allowed"
-                    on:click=send_message_action
-                    disabled=move || is_sending.get()
-                >
-                    {move || if is_sending.get() { "yapping..." } else { "yap" }}
-                </button>
-            </div>
+                }}
+            </Suspense>
         </div>
-    }
+        <div class="flex flex-row justify-center space-x-4 w-6/12 md:w-7/12">
+            <textarea
+                class="ir text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-teal-800 w-full h-8 md:h-12 p-2 text-wrap
+                       border-2 border-teal-600 dark:border-seafoam-600 focus:border-seafoam-500 dark:focus:border-aqua-500 focus:outline-none
+                       transition duration-300 ease-in-out resize-none rounded-md"
+                value=message
+                on:input=move |event| {
+                    set_message(event_target_value(&event));
+                    let target = event.target().unwrap();
+                    let style = target.unchecked_ref::<HtmlElement>().style();
+                    style.set_property("height", "auto").unwrap();
+                    style
+                        .set_property(
+                            "height",
+                            &format!(
+                                "{}px",
+                                target.unchecked_ref::<HtmlElement>().scroll_height(),
+                            ),
+                        )
+                        .unwrap();
+                }
+            >
+            </textarea>
+            <button
+                class="ib text-white bg-seafoam-600 hover:bg-seafoam-700 dark:bg-teal-600 dark:hover:bg-teal-700
+                       text-xs md:text-lg w-1/6 p-2 rounded-md transition duration-300 ease-in-out
+                       disabled:bg-gray-400 dark:disabled:bg-teal-900 disabled:text-gray-600 dark:disabled:text-teal-400 disabled:cursor-not-allowed"
+                on:click=send_message_action
+                disabled=move || is_sending.get()
+            >
+                {move || if is_sending.get() { "yapping..." } else { "yap" }}
+            </button>
+        </div>
+    </div>
+}
 }
 
 #[server(CreateMessage, "/api")]

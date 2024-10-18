@@ -149,16 +149,16 @@ pub fn Channels(
 
     view! {
         <div class="channels-component-view w-7/12 md:w-3/12 xl:w-2/12 p-2 mx-auto">
-            <h1 class="text-2xl ib text-tyrian-purple-300 text-center mb-4">"channels"</h1>
+            <h1 class="text-2xl font-bold text-teal-600 dark:text-mint-400 text-center mb-4">"Channels"</h1>
             <input
                 type="text"
                 placeholder="grep channel, bio"
                 on:input=move |ev| set_search_query(event_target_value(&ev))
-                class="w-full p-2 mb-4 bg-ucla-blue-700 text-celestial-blue-500"
+                class="w-full p-2 mb-4 bg-gray-100 dark:bg-teal-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-teal-600 rounded-md focus:outline-none focus:ring-2 focus:ring-seafoam-500 dark:focus:ring-aqua-400"
             />
-            {move || error_message().map(|err| view! { <p class="text-tyrian-purple-800">{err}</p> })}
+            {move || error_message().map(|err| view! { <p class="text-salmon-600 dark:text-salmon-400">{err}</p> })}
     
-            <ul class="channels-list flex flex-col">
+            <ul class="channels-list flex flex-col space-y-2">
                 {move || {
                     filtered_channels()
                         .iter()
@@ -167,7 +167,7 @@ pub fn Channels(
                             let channel_id = channel.id.clone();
                             view! {
                                 <button
-                                    class="channel-item bg-ucla-blue-800 p-2 shadow hover:bg-ucla-blue-900 transition duration-0 group relative"
+                                    class="channel-item bg-gray-200 dark:bg-teal-800 p-3 rounded-md shadow hover:bg-gray-300 dark:hover:bg-teal-700 transition duration-300 group relative"
                                     on:click=move |_| set_active_channel(channel_id.clone())
                                 >
                                     <div class="channel-item-info-container flex flex-col items-start">
@@ -180,37 +180,37 @@ pub fn Channels(
                                             <div class="title-v-stack flex flex-col items-start">
                                                 <a
                                                     href=channel.url.clone()
-                                                    class="ib text-base text-celestial-blue-500 hover:text-celestial-blue-500 pb-2"
+                                                    class="text-base text-seafoam-600 dark:text-aqua-400 hover:text-seafoam-700 dark:hover:text-aqua-300 pb-2"
                                                 >
                                                     {&channel.id}
                                                 </a>
                                                 {move || match lead_usernames.get().get(&fid) {
                                                     Some(username) => {
-                                                        view! { <p class="ib text-xs text-ucla-blue-700">{username}</p> }
+                                                        view! { <p class="text-xs text-gray-600 dark:text-gray-400">{username}</p> }
                                                     }
                                                     None => {
-                                                        view! { <p class="ib text-xs text-ucla-blue-700">"chill"</p> }
+                                                        view! { <p class="text-xs text-gray-600 dark:text-gray-400">"chill"</p> }
                                                     }
                                                 }}
                                             </div>
                                         </div>
-                                        <div class="description-v-stack hidden group-hover:flex flex-col items-start justify-center text-left mt-4 w-full absolute top-0 left-1/2 ml-2 z-50 bg-ucla-blue-700 p-4 shadow-lg">
-                                            <p class="ir text-celestial-blue-200 text-xs w-full">
+                                        <div class="description-v-stack hidden group-hover:flex flex-col items-start justify-center text-left mt-4 w-full absolute top-0 left-1/2 ml-2 z-50 bg-white dark:bg-teal-900 p-4 rounded-md shadow-lg">
+                                            <p class="text-gray-700 dark:text-gray-300 text-xs w-full">
                                                 {&channel.description}
                                             </p>
                                             {channel
                                                 .moderatorFid
                                                 .map(|fid| {
                                                     view! {
-                                                        <p class="ib text-sm text-ucla-blue-700">
+                                                        <p class="text-sm text-gray-600 dark:text-gray-400">
                                                             {"moderator fid: "} {fid}
                                                         </p>
                                                     }
                                                 })}
-                                            <p class="ir text-xs text-tyrian-purple-400">
+                                            <p class="text-xs text-teal-600 dark:text-teal-400">
                                                 {"created: "} {format_date(channel.createdAt)}
                                             </p>
-                                            <p class="ir text-xs text-ucla-blue-500">
+                                            <p class="text-xs text-seafoam-600 dark:text-seafoam-400">
                                                 {"followers: "} {channel.followerCount}
                                             </p>
                                         </div>

@@ -88,9 +88,9 @@ pub fn ThreadList(
                 type="text"
                 placeholder="grep articles!"
                 on:input=handle_search
-                class="grep-box w-7/12 p-2 mb-2 bg-ucla-blue-100 text-ucla-blue-700
-                border-2 border-ucla-blue-300 focus:border-ucla-blue-500 focus:outline-none
-                transition duration-300 ease-in-out"
+                class="grep-box w-7/12 p-2 mb-2 bg-gray-100 dark:bg-teal-800 text-teal-600 dark:text-mint-400
+                       border-2 border-gray-300 dark:border-teal-600 focus:border-teal-500 dark:focus:border-mint-300
+                       focus:outline-none transition duration-300 ease-in-out"
             />
             {move || {
                 thread_list()
@@ -99,17 +99,17 @@ pub fn ThreadList(
                         let thread_id = thread.id.clone();
                         let is_active = current_thread_id() == thread_id;
                         let (button_class, text_class) = if is_active {
-                            ("border-celestial-blue-500 bg-ucla-blue-900", "text-celestial-blue-400 group-hover:text-white")
+                            ("border-teal-500 bg-teal-600 dark:bg-teal-800", "text-mint-400 group-hover:text-white dark:text-mint-300 dark:group-hover:text-white")
                         } else {
                             (
-                                "border-ucla-blue-700 bg-ucla-blue-800 hover:border-ucla-blue-800 hover:bg-rich-black-500",
-                                "text-dark-purple-300 group-hover:text-white",
+                                "border-teal-700 bg-gray-300 dark:bg-teal-800 hover:border-teal-800 hover:bg-gray-900",
+                                "text-gray-300 group-hover:text-white dark:text-gray-100 dark:group-hover:text-white",
                             )
                         };
                         let thread_id_for_set = thread_id.clone();
                         let thread_id_for_delete = thread_id.clone();
                         view! {
-                            <div class="thread-list text-tyrian-purple-500 flex flex-col items-start justify-center w-full mb-2">
+                            <div class="thread-list text-teal-500 dark:text-mint-400 flex flex-col items-start justify-center w-full mb-2">
                                 <div class="flex w-full justify-between items-center">
                                     <button
                                         class=format!(
@@ -125,7 +125,7 @@ pub fn ThreadList(
                                             text_class,
                                         )>{thread.id.clone()}</p>
                                         <div class="stats-for-nerds hidden group-hover:flex flex-col items-start mt-2">
-                                            <p class="message-created_at ir text-xs text-celestial-blue-300 group-hover:text-celestial-blue-100">
+                                            <p class="message-created_at ir text-xs text-teal-300 dark:text-mint-200 group-hover:text-teal-100 dark:group-hover:text-mint-100">
                                                 created:
                                                 {thread
                                                     .created_at
@@ -135,8 +135,8 @@ pub fn ThreadList(
                                         </div>
                                     </button>
                                     <button
-                                        class="delete-button ib text-tyrian-purple-600 hover:text-tyrian-purple-400 text-sm ml-2 p-2 
-                                        bg-rich-black-400 hover:bg-rich-black-500 rounded transition duration-300 ease-in-out"
+                                        class="delete-button ib text-teal-600 dark:text-mint-400 hover:text-teal-400 dark:hover:text-mint-300 text-sm ml-2 p-2 
+                                        bg-gray-400 dark:bg-teal-900 hover:bg-gray-500 dark:hover:bg-teal-800 rounded transition duration-300 ease-in-out"
                                         on:click=move |_| {
                                             delete_thread_action.dispatch(thread_id_for_delete.clone())
                                         }

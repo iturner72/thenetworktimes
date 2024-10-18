@@ -54,12 +54,12 @@ pub fn CastList(
 
     view! {
         <div class="channel-casts-container w-11/12 lg:w-8/12 xl:w-5/12 mx-auto">
-            <h2 class="text-2xl ib text-ucla-blue-500 hover:text-ucla-blue-700 pb-6">
+            <h2 class="text-2xl font-bold text-teal-600 dark:text-mint-400 hover:text-teal-700 dark:hover:text-mint-300 pb-6">
                 <a href={move || format!("https://warpcast.com/~/channel/{}", active_channel.get())} target="_blank" rel="noopener noreferrer">
                     {move || format!("/{}", active_channel.get())}
                 </a>
             </h2>
-            {move || error.get().map(|err| view! { <p class="text-tyrian-purple-500">{err}</p> })}
+            {move || error.get().map(|err| view! { <p class="text-salmon-600 dark:text-salmon-400">{err}</p> })}
             <div class="cast-list">
                 <For
                     each=move || cast_list.get()
@@ -68,7 +68,7 @@ pub fn CastList(
                         let index = cast_list.with(|list| list.iter().position(|c| c.hash == cast.hash).unwrap_or(0));
                         view! {
                             <div class=move || format!(
-                                "border-l border-r border-b last:border-b-0 border-ucla-blue-300 {} p-4 transition-colors duration-300 ease-in-out hover:bg-rich-black-500 group",
+                                "border-l border-r border-b last:border-b-0 border-teal-700 dark:border-teal-300 {} p-4 transition-colors duration-300 ease-in-out hover:bg-gray-100 dark:hover:bg-teal-800 group",
                                 if index == 0 { "border-t" } else { "" }
                             )>
                                 <CastEntry 
@@ -83,20 +83,20 @@ pub fn CastList(
             <div>
                 {move || {
                     if is_loading.get() {
-                        view! { <div><p class="text-ucla-blue-500">"loading..."</p></div> }
+                        view! { <div><p class="text-teal-500 dark:text-teal-400">"loading..."</p></div> }
                     } else if has_more.get() {
                         view! {
                             <div>
                                 <button
                                     on:click=load_more
-                                    class="alumni-sans-regular mt-4 px-4 py-2 bg-ucla-blue-600 text-white hover:bg-ucla-blue-700 transition-colors duration-300"
+                                    class="mt-4 px-4 py-2 bg-seafoam-600 dark:bg-teal-600 text-white hover:bg-seafoam-700 dark:hover:bg-teal-700 transition-colors duration-300 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-seafoam-500 dark:focus:ring-teal-500"
                                 >
                                     "load more"
                                 </button>
                             </div>
                         }
                     } else {
-                        view! { <div><p class="text-celestial-blue-300">"no more casts to load."</p></div> }
+                        view! { <div><p class="text-gray-500 dark:text-gray-400">"no more casts to load."</p></div> }
                     }
                 }}
             </div>

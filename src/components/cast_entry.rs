@@ -101,7 +101,7 @@ pub fn CastEntry(
     };
 
     view! {
-        <div class="cast-entry group transition-colors duration-300 ease-in-out" node_ref=element_ref>
+        <div class="cast-entry bg-white dark:bg-teal-900 p-4 rounded-md shadow-md" node_ref=element_ref>
             {move || {
                 match user_data.get() {
                     Some((username, pfp)) => {
@@ -115,7 +115,7 @@ pub fn CastEntry(
                                     />
                                 </A>
                                 <A href=format!("/profile/{}", cast.data.fid)>
-                                    <span class="username ib text-ucla-blue-500 group-hover:text-white">{username}</span>
+                                    <span class="username text-seafoam-600 dark:text-aqua-400 hover:text-seafoam-700 dark:hover:text-aqua-300">{username}</span>
                                 </A>
                             </div>
                         }
@@ -123,8 +123,8 @@ pub fn CastEntry(
                     None => {
                         view! {
                             <div class="user-info-placeholder">
-                                <div class="w-12 h-12 bg-ucla-blue-800 rounded-full"></div>
-                                <span class="username-placeholder bg-ucla-blue-800 w-20 h-4"></span>
+                                <div class="w-12 h-12 bg-gray-200 dark:bg-teal-800 rounded-full"></div>
+                                <span class="username-placeholder bg-gray-200 dark:bg-teal-800 w-20 h-4"></span>
                             </div>
                         }
                     }
@@ -133,14 +133,14 @@ pub fn CastEntry(
     
             <div class="cast-content flex flex-col items-start pl-12">
                 <Suspense fallback=move || {
-                    view! { <p class="pt-2 ib text-ucla-blue-500 group-hover:text-white">"loading..."</p> }
+                    view! { <p class="pt-2 text-gray-600 dark:text-gray-400">"Loading..."</p> }
                 }>
                     {move || {
                         processed_content
                             .get()
                             .map(|parts| {
                                 view! {
-                                    <p class="ir text-md text-ucla-blue-500 group-hover:text-white">
+                                    <p class="text-md text-gray-800 dark:text-gray-200">
                                         {parts
                                             .into_iter()
                                             .map(|part| {
@@ -150,7 +150,7 @@ pub fn CastEntry(
                                                             href=part.clone()
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            class="text-celestial-blue-400 hover:text-celestial-blue-200 group-hover:text-celestial-blue-100"
+                                                            class="text-teal-600 dark:text-teal-400 hover:underline"
                                                         >
                                                             {part}
                                                         </a>
@@ -185,7 +185,7 @@ pub fn CastEntry(
                                                     <img
                                                         src=url.clone()
                                                         alt="cast image"
-                                                        class="mt-2 max-w-sm h-auto rounded-lg cursor-pointer transition-transform duration-300 hover:scale-105"
+                                                        class="mt-2 max-w-sm h-auto rounded-lg cursor-pointer"
                                                         on:click=move |_| open_modal(url_clone.clone())
                                                     />
                                                 }
@@ -200,11 +200,11 @@ pub fn CastEntry(
             {move || {
                 if show_modal.get() {
                     view! {
-                        <div class="fixed inset-0 bg-rich-black-500 bg-opacity-75 flex items-center justify-center z-50">
-                            <div class="bg-ucla-blue-900 p-4 rounded-lg max-w-auto max-h-screen overflow-auto">
+                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-teal-900 dark:bg-opacity-75 flex items-center justify-center z-50">
+                            <div class="bg-white dark:bg-teal-800 p-4 rounded-lg max-w-auto max-h-screen overflow-auto">
                                 <ImageView url=modal_image_url.get().unwrap_or_default()/>
                                 <button
-                                    class="mt-4 px-4 py-2 bg-celestial-blue-600 text-white hover:bg-celestial-blue-700 transition-colors duration-300"
+                                    class="mt-4 px-4 py-2 bg-gray-200 dark:bg-teal-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-teal-600 rounded-md transition-colors duration-300"
                                     on:click=close_modal
                                 >
                                     "Close"

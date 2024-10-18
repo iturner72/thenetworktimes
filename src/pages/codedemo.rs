@@ -24,13 +24,17 @@ pub fn CodeDemo() -> impl IntoView {
     let python_code = "def greet(name):\n    print(f\"Hello, {name}!\")\n\ngreet(\"World\")";
 
     view! {
-        <div class="flex justify-center items-start min-h-screen pt-6 bg-rich-black-100">
-            <div class="code-demo-container bg-rich-black-500 border-2 border-rich-black-400 flex flex-col items-center justify-center text-celestial-blue-300 p-2 w-auto max-w-4/12 space-y-2">
-                <h1 class="ib text-2xl text-ucla-blue-300">"highlight js demo"</h1>
-                <h2 class="text-tyrian-purple-300">"Rust Example"</h2>
-                <CodeBlock code=rust_code language="rust"/>
-                <h2 class="text-tyrian-purple-300">"Python Example"</h2>
-                <CodeBlock code=python_code language="python"/>
+        <div class="flex justify-center items-start min-h-screen pt-6 bg-gray-200 dark:bg-teal-900">
+            <div class="code-demo-container bg-white dark:bg-teal-800 border-2 border-gray-300 dark:border-teal-700 flex flex-col items-center justify-center text-gray-800 dark:text-gray-200 p-4 w-auto max-w-4xl rounded-lg shadow-lg space-y-4">
+                <h1 class="text-3xl font-bold text-seafoam-600 dark:text-mint-400">"Highlight.js Demo"</h1>
+                <div class="w-full">
+                    <h2 class="text-2xl font-semibold text-teal-600 dark:text-aqua-400 mb-2">"Rust Example"</h2>
+                    <CodeBlock code=rust_code language="rust"/>
+                </div>
+                <div class="w-full">
+                    <h2 class="text-2xl font-semibold text-teal-600 dark:text-aqua-400 mb-2">"Python Example"</h2>
+                    <CodeBlock code=python_code language="python"/>
+                </div>
             </div>
         </div>
     }

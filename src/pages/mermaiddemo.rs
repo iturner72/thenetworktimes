@@ -121,16 +121,20 @@ pub fn MermaidDemo() -> impl IntoView {
     });
 
     view! {
-        <div class="flex flex-col items-center text-purple-400 bg-black p-4">
-            <div class="w-10/12">
-                <h2 class="ib text-3xl mb-4">"mermaid"</h2>
-                <div _ref=diagram_ref id="mermaid-diagram" class="mermaid">
-                    {diagram}
+        <div class="flex flex-col items-center text-teal-700 dark:text-mint-300 bg-gray-100 dark:bg-teal-900 p-6 min-h-screen">
+            <div class="w-11/12 md:w-10/12 max-w-4xl">
+                <h2 class="text-3xl font-bold mb-6 text-seafoam-700 dark:text-aqua-400">"Mermaid Diagram"</h2>
+                <div class="bg-white dark:bg-teal-800 p-4 rounded-lg shadow-md">
+                    <div _ref=diagram_ref id="mermaid-diagram" class="mermaid">
+                        {diagram}
+                    </div>
                 </div>
             </div>
-            <div class="w-10/12">
-                <p class="mt-4">"render status: " {render_status}</p>
-                <pre class="mt-4 p-4 bg-purple-900 text-blue-100 text-left rounded">{diagram}</pre>
+            <div class="w-11/12 md:w-10/12 max-w-4xl mt-6">
+                <p class="text-gray-700 dark:text-gray-300">"Render status: " <span class="font-semibold">{render_status}</span></p>
+                <pre class="mt-4 p-4 bg-gray-200 dark:bg-teal-800 text-gray-800 dark:text-gray-200 text-left rounded-lg overflow-x-auto">
+                    {diagram}
+                </pre>
             </div>
         </div>
     }

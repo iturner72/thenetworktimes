@@ -26,7 +26,6 @@ pub fn MessageList(
 
     fetch_messages();
 
-
     view! {
         <div class="message-list h-108 md:h-172 space-y-8 overflow-hidden hover:overflow-y-auto flex flex-col">
             <For
@@ -42,7 +41,7 @@ pub fn MessageList(
                             }
                         })
                 }
-
+    
                 key=|message| message.id
                 children=move |message| {
                     view! {
@@ -56,14 +55,14 @@ pub fn MessageList(
                         )>
                             <button
                                 class=format!(
-                                    "message-item border-2 p-2 hover:border-ucla-blue-800 bg-ucla-blue-800 hover:bg-ucla-blue-900 transition duration-0 group {}",
+                                    "message-item border-2 p-2 transition duration-0 group {}",
                                     if message.role == "assistant" {
-                                        "border-none bg-opacity-0 self-start"
+                                        "border-none bg-opacity-0 self-start bg-gray-300 dark:bg-teal-800 hover:bg-gray-400 dark:hover:bg-teal-900"
                                     } else {
-                                        "border-ucla-blue-700 bg-ucla-blue-800 self-end"
+                                        "border-gray-700 dark:border-teal-700 bg-gray-300 dark:bg-teal-800 self-end hover:bg-gray-400 dark:hover:bg-teal-900"
                                     },
                                 )
-
+    
                                 on:click=move |_| {
                                     let element = window()
                                         .unwrap()
@@ -81,7 +80,7 @@ pub fn MessageList(
                                     }
                                 }
                             >
-
+    
                                 <div class="flex flex-row items-center space-x-2">
                                     <img
                                         src="openai_square_logo.webp"
@@ -91,19 +90,19 @@ pub fn MessageList(
                                         src="anthropic_square_logo.webp"
                                         class="w-6 h-6 rounded-full"
                                     />
-                                    <p class="message-content ir text-base text-dark-purple-700 hover:text-celestial-blue-400">
+                                    <p class="message-content ir text-base text-teal-600 dark:text-mint-400 hover:text-teal-800 dark:hover:text-mint-300">
                                         {message.content.clone()}
                                     </p>
                                 </div>
                                 <div class="info-for-nerds flex flex-row justify-between space-x-12 pt-8 hidden">
                                     <div class="ai-info flex flex-col space-y-1">
-                                        <p class="message-thread_id ir text-xs text-dark-purple-800 hover:text-dark-purple-600">
+                                        <p class="message-thread_id ir text-xs text-teal-800 dark:text-mint-600 hover:text-teal-600 dark:hover:text-mint-500">
                                             thread id: {message.thread_id.clone()}
                                         </p>
-                                        <p class="message-id ir text-xs text-dark-purple-800 hover:text-dark-purple-600">
+                                        <p class="message-id ir text-xs text-teal-800 dark:text-mint-600 hover:text-teal-600 dark:hover:text-mint-500">
                                             message id: {message.id}
                                         </p>
-                                        <p class="message-created_at ir text-xs text-dark-purple-900 hover:text-dark-purple-700">
+                                        <p class="message-created_at ir text-xs text-teal-900 dark:text-mint-700 hover:text-teal-700 dark:hover:text-mint-600">
                                             {message
                                                 .created_at
                                                 .map(|dt| dt.format("%b %d, %I:%M %p").to_string())
@@ -111,13 +110,13 @@ pub fn MessageList(
                                         </p>
                                     </div>
                                     <div class="message-info flex flex-col space-y-1">
-                                        <p class="message-role ir text-xs text-dark-purple-600 hover:text-tyrian-purple-400">
+                                        <p class="message-role ir text-xs text-teal-600 dark:text-mint-400 hover:text-teal-800 dark:hover:text-mint-300">
                                             role: {message.role.clone()}
                                         </p>
-                                        <p class="message-active_lab ir text-xs text-celestial-blue-700 hover:text-celestial-blue-400">
+                                        <p class="message-active_lab ir text-xs text-seafoam-600 dark:text-aqua-400 hover:text-seafoam-800 dark:hover:text-aqua-300">
                                             lab: {message.active_lab.clone()}
                                         </p>
-                                        <p class="message-active_model ib text-xs text-ucla-blue-600 hover:text-ucla-blue-700">
+                                        <p class="message-active_model ib text-xs text-aqua-600 dark:text-aqua-700 hover:text-aqua-800 dark:hover:text-aqua-300">
                                             model: {message.active_model.clone()}
                                         </p>
                                     </div>
@@ -127,7 +126,7 @@ pub fn MessageList(
                     }
                 }
             />
-
+    
         </div>
     }
 }

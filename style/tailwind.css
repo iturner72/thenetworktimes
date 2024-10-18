@@ -15,6 +15,10 @@ html {
     display: inline;
 }
 
+.dot {
+    transition: all 0.3s ease-in-out;
+}
+
 .ir {
   font-family: "Inter Tight", sans-serif;
   font-optical-sizing: auto;

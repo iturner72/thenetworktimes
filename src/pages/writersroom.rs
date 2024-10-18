@@ -69,17 +69,17 @@ pub fn WritersRoom() -> impl IntoView {
     });
 
     view! {
-        <div class="w-full flex flex-col justify-start pt-2 pl-2 pr-2 h-full">
+        <div class="w-full flex flex-col bg-gray-300 dark:bg-teal-900 justify-start pt-2 pl-2 pr-2 h-full">
             <div class="flex flex-row items-center justify-between">
                 <div class="flex flex-row items-center justify-center space-x-4">
                     <button
-                        class="self-start ib text-xs md:text-sm text-dark-purple-800 hover:text-dark-purple-900 p-2 border-2 bg-ucla-blue-800 hover:bg-ucla-blue-900 border-dark-purple-700 hover:border-dark-purple-900"
+                        class="self-start ib text-xs md:text-sm text-gray-900 dark:text-gray-100 hover:text-gray-800 dark:hover:text-gray-200 p-2 border-2 bg-gray-300 dark:bg-teal-700 hover:bg-gray-400 dark:hover:bg-teal-600 border-gray-700 dark:border-gray-600 hover:border-gray-900 dark:hover:border-gray-400"
                         on:click=move |_| set_show_threads.update(|v| *v = !*v)
                     >
                         {move || if show_threads.get() { "hide threads" } else { "show threads" }}
                     </button>
                     <button
-                        class="ib text-xs md:text-sm text-ucla-blue-700 hover:text-celestial-blue-400 bg-ucla-blue-800 hover:bg-ucla-blue-900 border-dark-purple-700 hover:border-dark-purple-900"
+                        class="ib text-xs md:text-sm text-teal-700 dark:text-teal-100 hover:text-teal-600 dark:hover:text-teal-200 bg-gray-300 dark:bg-teal-700 hover:bg-gray-400 dark:hover:bg-teal-600 border-gray-700 dark:border-gray-600 hover:border-gray-900 dark:hover:border-gray-400"
                         on:click=move |_| create_new_thread.dispatch(())
                     >
                         "mew"
@@ -87,9 +87,9 @@ pub fn WritersRoom() -> impl IntoView {
                 </div>
                 <select
                     class="self-start ib text-xs md:text-sm 
-                    text-dark-purple-800 hover:text-dark-purple-900 p-2 border-2 
-                    bg-ucla-blue-800 hover:bg-ucla-blue-900 
-                    border-dark-purple-700 hover:border-dark-purple-900"
+                    text-gray-900 dark:text-gray-100 hover:text-gray-800 dark:hover:text-gray-200 p-2 border-2 
+                    bg-gray-300 dark:bg-teal-700 hover:bg-gray-400 dark:hover:bg-teal-600 
+                    border-gray-700 dark:border-gray-600 hover:border-gray-900 dark:hover:border-gray-400"
                     on:change=handle_model_change
                 >
                     <option value="claude-3-haiku-20240307">"claude-3-haiku"</option>
@@ -129,12 +129,12 @@ pub fn WritersRoom() -> impl IntoView {
                             }
                         })
                     }}
-
+    
                     </Suspense>
                 </div>
-                <div class="w-full flex flex-col content-end justify-between h-[calc(90vh-10px)]">
+                <div class="w-full flex flex-col content-end justify-between h-[calc(80vh-10px)]">
                     <MessageList current_thread_id=thread_id/>
-                    <div class="relative text-rich-black-700">
+                    <div class="relative text-gray-900 dark:text-gray-100">
                         <Toast
                             message=toast_message
                             visible=toast_visible

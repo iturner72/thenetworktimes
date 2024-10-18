@@ -50,7 +50,7 @@ pub fn DarkModeToggle() -> impl IntoView {
 
     view! {
         <button
-            class="p-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+            class="p-2 rounded bg-gray-200 dark:bg-teal-700 text-gray-800 dark:text-gray-200"
             on:click=toggle_dark_mode
         >
             {move || if is_dark.get() {
