@@ -41,7 +41,7 @@ tower-http = { version = "0.5", features = ["fs"], optional = true }
 uuid = { version = "1.8.0", features = ["v4"], optional = true }
 urlencoding = "2.1.2"
 url = "2.2.2"
-wasm-bindgen = "=0.2.95"
+wasm-bindgen = "=0.2.96"
 web-sys = { version = "0.3.72", features = ["Storage", "Window", "Document", "Element", "DomTokenList", "CustomEvent", "CustomEventInit", "IntersectionObserver", "IntersectionObserverEntry", "IntersectionObserverInit"], optional = false }
 thiserror = "1"
 tracing = { version = "0.1", optional = true }
