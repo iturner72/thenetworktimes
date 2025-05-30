@@ -43,16 +43,16 @@ cfg_if! {
 
         #[derive(Clone)]
         pub struct OpenAIService {
-            client: Client,
-            api_key: String,
-            model: String,
+            pub client: Client,
+            pub api_key: String,
+            pub model: String,
         }
 
         #[derive(Clone)]
         pub struct AnthropicService {
-            client: Client,
-            api_key: String,
-            model: String,
+            pub client: Client,
+            pub api_key: String,
+            pub model: String,
         }
 
         impl AnthropicService {
@@ -92,6 +92,7 @@ cfg_if! {
                     .map_err(|e| anyhow!("Failed to send message: {}", e))?;
 
                 let mut stream = response.bytes_stream();
+                let re = Regex::new(r#""text":"([^"]*)""#).unwrap();
 
                 // todo (this is copy pasta from open ai below, will need to fix!!
                 while let Some(item) = stream.next().await {
@@ -107,7 +108,6 @@ cfg_if! {
                                     break;
                                 } else if line.trim().starts_with("data: ") {
                                     let json_str = &line.trim()[6..];
-                                    let re = Regex::new(r#""text":"([^"]*)""#).unwrap();
                                     for cap in re.captures_iter(json_str) {
                                         let content = cap[1].to_string();
                                         info!("Extracted content: {}", content);
@@ -166,6 +166,7 @@ cfg_if! {
                     .map_err(|e| anyhow!("Failed to send message: {}", e))?;
 
                 let mut stream = response.bytes_stream();
+                let re = Regex::new(r#""content":"([^"]*)""#).unwrap();
 
                 while let Some(item) = stream.next().await {
                     match item {
@@ -180,7 +181,6 @@ cfg_if! {
                                     break;
                                 } else if line.trim().starts_with("data: ") {
                                     let json_str = &line.trim()[6..];
-                                    let re = Regex::new(r#""content":"([^"]*)""#).unwrap();
                                     for cap in re.captures_iter(json_str) {
                                         let content = cap[1].to_string();
                                         info!("Extracted content: {}", content);
@@ -369,20 +369,25 @@ view! {
     <div class="flex flex-col items-center justify-between pb-2 md:pb-4">
         <div class="w-10/12 md:w-7/12 h-[calc(0vh-20px)] overflow-y-auto flex flex-col-reverse pb-0 md:pb-12">
             <Suspense fallback=|| {
-                view! { <p class="ir text-base text-seafoam-500 dark:text-aqua-400">"loading..."</p> }
+                view! {
+                    <p class="ir text-base text-seafoam-500 dark:text-aqua-400">"loading..."</p>
+                }
             }>
                 {move || {
                     view! {
-                        <p class="ir text-teal-700 dark:text-mint-300 whitespace-pre-wrap">{response.get()}</p>
+                        <p class="ir text-teal-700 dark:text-mint-300 whitespace-pre-wrap">
+                            {response.get()}
+                        </p>
                     }
                 }}
+
             </Suspense>
         </div>
         <div class="flex flex-row justify-center space-x-4 w-6/12 md:w-7/12">
             <textarea
                 class="ir text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-teal-800 w-full h-8 md:h-12 p-2 text-wrap
-                       border-2 border-teal-600 dark:border-seafoam-600 focus:border-seafoam-500 dark:focus:border-aqua-500 focus:outline-none
-                       transition duration-300 ease-in-out resize-none rounded-md"
+                border-2 border-teal-600 dark:border-seafoam-600 focus:border-seafoam-500 dark:focus:border-aqua-500 focus:outline-none
+                transition duration-300 ease-in-out resize-none rounded-md"
                 value=message
                 on:input=move |event| {
                     set_message(event_target_value(&event));
@@ -392,10 +397,7 @@ view! {
                     style
                         .set_property(
                             "height",
-                            &format!(
-                                "{}px",
-                                target.unchecked_ref::<HtmlElement>().scroll_height(),
-                            ),
+                            &format!("{}px", target.unchecked_ref::<HtmlElement>().scroll_height()),
                         )
                         .unwrap();
                 }
@@ -403,8 +405,8 @@ view! {
             </textarea>
             <button
                 class="ib text-white bg-seafoam-600 hover:bg-seafoam-700 dark:bg-teal-600 dark:hover:bg-teal-700
-                       text-xs md:text-lg w-1/6 p-2 rounded-md transition duration-300 ease-in-out
-                       disabled:bg-gray-400 dark:disabled:bg-teal-900 disabled:text-gray-600 dark:disabled:text-teal-400 disabled:cursor-not-allowed"
+                text-xs md:text-lg w-1/6 p-2 rounded-md transition duration-300 ease-in-out
+                disabled:bg-gray-400 dark:disabled:bg-teal-900 disabled:text-gray-600 dark:disabled:text-teal-400 disabled:cursor-not-allowed"
                 on:click=send_message_action
                 disabled=move || is_sending.get()
             >
@@ -465,6 +467,7 @@ pub async fn create_message(new_message_view: NewMessageView, is_llm: bool) -> R
                     id: thread_id.clone(),
                     created_at: None,
                     updated_at: None,
+                    title: None, 
                 };
                 diesel::insert_into(threads::table)
                     .values(&new_thread)

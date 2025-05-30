@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ThreadView {
     pub id: String,
+    pub title: Option<String>,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
 }
@@ -42,12 +43,14 @@ cfg_if! { if #[cfg(feature = "ssr")] {
         pub id: String,
         pub created_at: Option<NaiveDateTime>,
         pub updated_at: Option<NaiveDateTime>,
+        pub title: Option<String>,
     }
 
     impl From<Thread> for ThreadView {
         fn from(thread: Thread) -> Self {
             ThreadView {
                 id: thread.id,
+                title: thread.title,
                 created_at: thread.created_at.map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc)),
                 updated_at: thread.updated_at.map(|dt| DateTime::<Utc>::from_naive_utc_and_offset(dt, Utc)),
             }

@@ -45,6 +45,7 @@ cfg_if! {
                         id: payload.thread_id.clone(),
                         created_at: None,
                         updated_at: None,
+                        title: None,
                     };
                     diesel::insert_into(threads::table)
                         .values(&new_thread)

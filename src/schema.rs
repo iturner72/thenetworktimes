@@ -1,3 +1,4 @@
+// @generated automatically by Diesel CLI.
 use cfg_if::cfg_if;
 cfg_if! {
 if #[cfg(feature = "ssr")] {
@@ -22,6 +23,8 @@ diesel::table! {
         id -> Varchar,
         created_at -> Nullable<Timestamp>,
         updated_at -> Nullable<Timestamp>,
+        #[max_length = 255]
+        title -> Nullable<Varchar>,
     }
 }
 

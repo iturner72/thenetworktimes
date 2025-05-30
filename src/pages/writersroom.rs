@@ -112,24 +112,38 @@ pub fn WritersRoom() -> impl IntoView {
                         format!("{} max-w-0 w-0 opacity-0", base_class)
                     }
                 }>
-                    <Suspense fallback = move || view! { <p>"loading threads..."</p> }>
-                    {move || {
-                        threads.get().map(|thread_list| {
-                            match thread_list {
-                                Ok(_threads) => view! {
-                                    <div>
-                                        <ThreadList 
-                                            current_thread_id=thread_id 
-                                            set_current_thread_id=set_thread_id
-                                            _lab=lab // will use for filtering later
-                                        />
-                                    </div>
-                                },
-                                Err(_) => view! { <div>"error loading threads: {e}"</div> },
-                            }
-                        })
-                    }}
-    
+                    <Suspense fallback=move || {
+                        view! { <p>"loading threads..."</p> }
+                    }>
+                        {move || {
+                            threads
+                                .get()
+                                .map(|thread_list| {
+                                    match thread_list {
+                                        Ok(_threads) => {
+                                            view! {
+                                                <div>
+                                                    <ThreadList
+                                                        current_thread_id=thread_id
+                                                        set_current_thread_id=set_thread_id
+                                                        // will use for filtering later
+                                                        _lab=lab
+                                                    />
+                                                </div>
+                                            }
+                                        }
+                                        Err(_) => {
+                                            view! {
+                                                // will use for filtering later
+
+                                                // will use for filtering later
+                                                <div>"error loading threads: {e}"</div>
+                                            }
+                                        }
+                                    }
+                                })
+                        }}
+
                     </Suspense>
                 </div>
                 <div class="w-full flex flex-col content-end justify-between h-[calc(80vh-10px)]">
@@ -194,6 +208,7 @@ pub async fn create_thread() -> Result<String, ServerFnError> {
                 id: uuid::Uuid::new_v4().to_string(),
                 created_at: Some(Utc::now().naive_utc()),
                 updated_at: Some(Utc::now().naive_utc()),
+                title: None, 
             };
 
             diesel::insert_into(threads::table)
